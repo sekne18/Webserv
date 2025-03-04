@@ -1,18 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus 19 REST Tester</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>CAMPUS 19</h1>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8d/42_Logo.svg" alt="42 Logo" class="logo">
+    <h1>Campus 19 REST Tester</h1>
+    <div class="container">
+        <div class="card">
+            <h2>GET Request</h2>
+            <input type="text" id="getUrl" placeholder="Enter URL">
+            <button onclick="sendRequest('GET')">Send GET</button>
+            <div class="response" id="getResponse"></div>
+        </div>
+        <div class="card">
+            <h2>POST Request</h2>
+            <input type="text" id="postUrl" placeholder="Enter URL">
+            <input type="text" id="postData" placeholder="Enter JSON Data">
+            <button onclick="sendRequest('POST')">Send POST</button>
+            <div class="response" id="postResponse"></div>
+        </div>
+        <div class="card">
+            <h2>DELETE Request</h2>
+            <input type="text" id="deleteUrl" placeholder="Enter URL">
+            <button onclick="sendRequest('DELETE')">Send DELETE</button>
+            <div class="response" id="deleteResponse"></div>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
 </body>
 </html>
-

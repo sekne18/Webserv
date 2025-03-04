@@ -107,15 +107,17 @@ void Server::processClientEvent(int clientSocket)
 
   Client *client = _clients[clientSocket];
   if (!client->readRequest()) {
+    close(clientSocket);
     delete client;
     _clients.erase(clientSocket);
     return;
   }
-
+ 
   if (client->hasCompleteRequest()) {
     Request request = client->getRequest();
     Response response(_config);
     response.processRequest(request, clientSocket);
+    close(clientSocket);
     delete client;
     _clients.erase(clientSocket);
   }

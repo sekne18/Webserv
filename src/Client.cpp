@@ -53,25 +53,12 @@ bool Client::readRequest()
     // This will append the buffer to the rawRequest string
     _rawRequest.append(buffer, bytesRead);
 
-    std::cout << "Request " << _rawRequest << "\n";
-
-    // Check if the entire request has been received
-    // For multipart form-data, look for the boundary end marker
-    size_t boundaryEnd = _rawRequest.find("--\r\n");
-    if (boundaryEnd != std::string::npos) {
-      // End of request detected
-      break;
+    if (_rawRequest.find("\r\n\r\n") != std::string::npos) {
+      break; // End of headers found
     }
   }
-  
-  /*
-  std::cout << "=======================================================" << "\n";
-  std::cout << "Received raw request: \n" << _rawRequest << "\n";
-  std::cout << "=======================================================" << "\n";
-  */
-  
-  // Check if the request is complete
-  if (_rawRequest.find("--\r\n") == std::string::npos) {
+    
+  if (_rawRequest.find("\r\n\r\n") == std::string::npos) {
     return true; // More data might be coming
   }
 
