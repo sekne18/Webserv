@@ -42,7 +42,7 @@ void Server::start()
     _isRunning = true;
     
     // Resize the events vector to hold up to 64 events
-    _events.resize(64);
+    _events.resize(64); //TODO: Make the size configurable
 
     // Handle events (this will block)
     handleEvents();
@@ -71,6 +71,13 @@ void Server::handleEvents()
     for (int i = 0; i < numEvents; ++i)
     {
       // Event detected, check if it's for the server or client socket
+      if (_events[i].events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP)) {
+        std::map<int, Client*>::iterator it = _clients.find(_events[i].data.fd);
+        if (it != _clients.end()) {
+          removeClient(it->second);
+        }
+        continue;
+      }
       if (_events[i].data.fd == _serverSocket) { // server socket listens for incoming connections.
         acceptClient(); // New client connection 
       } else {
@@ -94,6 +101,14 @@ void Server::acceptClient()
   }
 }
 
+void Server::removeClient(Client *client)
+{
+  epoll_ctl(_epollFd, EPOLL_CTL_DEL, client->getSocket(), NULL);
+  close(client->getSocket());
+  delete client;
+  _clients.erase(client->getSocket());
+}
+
 /*
  * Function processes an event on a client socket.
  * It reads the client request, processes it, and sends a response.
@@ -107,9 +122,7 @@ void Server::processClientEvent(int clientSocket)
 
   Client *client = _clients[clientSocket];
   if (!client->readRequest()) {
-    close(clientSocket);
-    delete client;
-    _clients.erase(clientSocket);
+    removeClient(client);
     return;
   }
  
@@ -117,8 +130,6 @@ void Server::processClientEvent(int clientSocket)
     Request request = client->getRequest();
     Response response(_config);
     response.processRequest(request, clientSocket);
-    close(clientSocket);
-    delete client;
-    _clients.erase(clientSocket);
+    removeClient(client);
   }
 }

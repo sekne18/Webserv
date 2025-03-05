@@ -48,7 +48,7 @@ void NetworkManager::bindSocket(int serverSocket, sockaddr_in& serverAddress)
  * */
 void NetworkManager::listenForConnections(int serverSocket)
 {
-  if (listen(serverSocket, 10) == -1)
+  if (listen(serverSocket, 10) == -1) //TODO: Make the backlog size configurable
   {
     close(serverSocket);
     throw std::runtime_error("Error: Failed to listen to socket. " 
@@ -94,7 +94,7 @@ Client *NetworkManager::acceptConnection(int serverSocket, int epollFd)
   }
 
   // Set the client socket to non-blocking mode
-  int flags = fcntl(clientSocket, F_GETFL, 0);
+  int flags = fcntl(clientSocket, F_GETFL, 0); //TODO: use alternative functions to fcntl
   fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
   
   // Add the client socket to the epoll set

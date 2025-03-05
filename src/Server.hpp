@@ -30,6 +30,7 @@ private:
   NetworkManager _networkManager;
 
   void acceptClient();
+  void removeClient(Client *client);
   void processClientEvent(int clientSocket);
   void handleEvents();
 
