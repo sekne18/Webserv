@@ -20,9 +20,6 @@ void Request::parseRequest(const std::string &rawRequest)
   std::istringstream requestStream(rawRequest);
   std::string line;
 
-  // Print the raw request for debugging
-  //std::cerr << "Raw request: " << rawRequest << "\n";
-
   // Parse the request line (for example "GET /index.html HTTP/1.1")
   std::getline(requestStream, line);
   std::istringstream requestLineStream(line);

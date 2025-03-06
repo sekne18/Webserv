@@ -44,7 +44,7 @@ void CGI::setupChildProcess(int pipefd[2], const std::string& scriptPath, const 
 {
   close(pipefd[0]); // Close read end of the pipe
     
-  // Redirect stdout to the write end of the pipe
+  // Redirect stdout to the write end of the pipr
   if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
     std::cerr << "Error: Failed to redirect stdout. " << strerror(errno) << "\n";
     close(pipefd[1]);
@@ -59,12 +59,6 @@ void CGI::setupChildProcess(int pipefd[2], const std::string& scriptPath, const 
   envStrings.push_back("REQUEST_METHOD=GET");
   envStrings.push_back("SERVER_SOFTWARE=WebServ/1.0");
   envStrings.push_back("SERVER_NAME=" + _config.getServerName());
-
-  // Convert int to string using ostringstream for C++98 compatibility
-  std::ostringstream portStr;
-  portStr << _config.getPort();
-  envStrings.push_back("SERVER_PORT=" + portStr.str());
-
   envStrings.push_back("DOCUMENT_ROOT=" + _config.getDocumentRoot());
 
   // Convert to char* array for execve

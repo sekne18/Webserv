@@ -14,8 +14,7 @@ void Response::processRequest(const Request& request, int clientSocket)
   std::string method = request.getMethod();
   std::string url = request.getUrl();
   
-  if (method == "GET")
-  {
+  if (method == "GET") {
     if (url == "/")
       serveStaticFile(_config.getDocumentRoot() + "/index.html", clientSocket);
     else if (url.find("/cgi-bin/") == 0)
@@ -30,9 +29,7 @@ void Response::processRequest(const Request& request, int clientSocket)
       // Serve a static file
       serveStaticFile(_config.getDocumentRoot() + url, clientSocket);
     }
-  } 
-  else if (method == "POST")
-  {
+  } else if (method == "POST") {
     if (url == "/upload") {
       // Handle file upload
       handleFileUpload(request.getBody(), clientSocket);
@@ -40,10 +37,74 @@ void Response::processRequest(const Request& request, int clientSocket)
       // Unsupported POST request
       sendErrorResponse(405, "Method Not Allowed", clientSocket);
     }
-  }
-  else {
+  } else if (method == "DELETE") {
+    handleDeleteResponse(_config.getDocumentRoot() + url, clientSocket);
+  } else {
     // Unsupported HTTP method
     sendErrorResponse(405, "Method Not Allowed", clientSocket);
+  }
+}
+
+void Response::handleDeleteResponse(const std::string& filePath, int clientSocket)
+{
+  // Check if the file exists and is accessible
+  if (access(filePath.c_str(), F_OK) != 0) {
+    sendErrorResponse(404, "Not Found", clientSocket);
+    return;
+  }
+
+  // Check if the file is a regular file
+  struct stat fileStat;
+  if (stat(filePath.c_str(), &fileStat) != 0) {
+    sendErrorResponse(500, "Internal Server Error", clientSocket);
+    return;
+  }
+
+  // Don't allow deleting directories
+  if (!S_ISREG(fileStat.st_mode)) {
+    sendErrorResponse(400, "Bad Request", clientSocket);
+    return;
+  }
+
+  // Fork a child process
+  pid_t pid = fork();
+  if (pid == -1) {
+    sendErrorResponse(500, "Internal Server Error", clientSocket);
+    return;
+  }
+
+  if (pid == 0) {
+    // Child process
+    char* args[] = {const_cast<char*>("/bin/rm"), const_cast<char*>(filePath.c_str()), NULL};
+    char *envp[] = {NULL};
+    
+    execve("/bin/rm", args, envp);
+
+    // If execvp fails
+    std::cerr << "Error: Failed to execute 'rm' command. " << strerror(errno) << "\n";
+    exit(1);
+  }
+  
+  // Parent process
+  int status;
+  waitpid(pid, &status, 0);
+
+  if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+    // Determine MIME type based on file extension
+    std::string mimeType = getMimeType(filePath);
+  
+    // Success - send 200 OK Response
+    std::ostringstream response;
+    response << "HTTP/1.1 200 OK\r\n";
+    response << "Content-Type: " << mimeType << "\r\n";
+    response << "Connection: close\r\n";
+    response << "\r\n";
+    response << "Resource successfully deleted\r\n"; 
+
+    write(clientSocket, response.str().c_str(), response.str().size());
+  }  else {
+    // Error - send 500 Internal Server Error Response
+    sendErrorResponse(500, "Internal Server Error", clientSocket);
   }
 }
 
