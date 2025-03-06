@@ -17,13 +17,18 @@ private:
   std::string _rawRequest;
   Request _request;
   bool _hasCompleteRequest;
+  bool processHeaders(size_t &bodyStartPos, size_t &contentLength);
+  bool readDataFromSocket(char *buffer, size_t bufferSize);
+  void parseRequest();
+  bool isRequestComplete(size_t bodyStartPos, size_t contentLength);
+
 
 public:
   Client();
   Client(int socket, sockaddr_in address);
   ~Client();
   
-  bool readRequest();  // Returns false if client disconnected
+  bool readRequest();
   int getSocket() const;
   bool hasCompleteRequest() const;
   Request getRequest() const;
