@@ -73,9 +73,6 @@ void CGI::setupChildProcess(int pipefd[2], const std::string& scriptPath, const 
   args[0] = const_cast<char*>(scriptPath.c_str());
   args[1] = NULL;
 
-  // Debug: Print the script path
-  std::cerr << "Executing CGI script: " << scriptPath << "\n";
-
   // Execute the CGI script.
   execve(scriptPath.c_str(), args, envp);
  
@@ -92,9 +89,6 @@ void CGI::handleParentProcess(int pipefd[2], pid_t pid, int clientSocket)
   std::string cgiOutput = readFromPipe(pipefd[0]);
   close(pipefd[0]);
   
-  // Debug: Print the CGI output
-  std::cerr << "CGI output: " << cgiOutput << std::endl;
-
   // Wait for the child process to finish
   int status;
   waitpid(pid, &status, 0);

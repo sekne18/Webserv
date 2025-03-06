@@ -2,7 +2,7 @@ async function sendRequest(method) {
   let url = document.getElementById(method.toLowerCase() + 'Url').value;
   let data = document.getElementById(method.toLowerCase() + 'Data')?.value || null;
   let options = { method };
-  if (data && (method === 'POST' || method === 'PUT')) {
+  if (data && (method === 'POST')) {
     options.headers = { 'Content-Type': 'application/json' };
     options.body = JSON.stringify(JSON.parse(data));
   }
