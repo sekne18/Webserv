@@ -1,14 +1,15 @@
 # Webserv
 
 Simple web server in C++.
-Supports GET POST and DELETE
+Supports **GET**, **POST** and **DELETE**
 
 ## Initialiation
 make
+<be />
 ./webserv
 
 ## Server
-Server should display something similar to this output:
+A successful server initialization should display something similar to this output:
 ```
 Loading configuration from: config/default.conf
 Starting server on port 8080
