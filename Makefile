@@ -1,12 +1,19 @@
 CPP = c++
 CPP_FLAGS = -Wall -Wextra -Werror -std=c++98
 
-SRC = src/main.cpp src/Server.cpp src/Response.cpp \
-      src/Config.cpp src/NetworkManager.cpp src/Client.cpp \
-      src/CGI.cpp src/Request.cpp src/Utils.cpp
-
+SRC_DIR = src
 OBJ_DIR = obj
-OBJS = $(patsubst src/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
+INC_DIR = include
+
+LINK_FLAGS :=
+INC_FLAGS := -I$(INC_DIR)
+
+FILES = main.cpp Server.cpp Response.cpp \
+      Config.cpp NetworkManager.cpp Client.cpp \
+    CGI.cpp Request.cpp Utils.cpp
+
+SRCS = $(addprefix $(SRC_DIR)/, $(FILES))
+OBJS = $(addprefix $(OBJ_DIR)/, $(FILES:.cpp=.o))
 
 NAME = webserv
 
@@ -26,7 +33,7 @@ $(NAME): $(OBJS)
 	$(CPP) $(CPP_FLAGS) $(OBJS) -o $(NAME)
 
 $(OBJ_DIR)/%.o: src/%.cpp | $(OBJ_DIR)
-	$(CPP) $(CPP_FLAGS) -c $< -o $@
+	$(CPP) $(CPP_FLAGS) -c $< -o $@ $(INC_FLAGS) $(LINK_FLAGS)
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)

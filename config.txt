@@ -1,0 +1,92 @@
+# webserv
+
+a simple http-server that allows virtual servers
+depending on the config file, we will have a hierarchy that will need to be searched through in order to correctly route incoming requests to the correct server.
+
+a minimal server block will look like this:
+server {
+	listen 80;
+}
+it will start a server on port 80 on all available interfaces and route all requests to the root directory (= directory where webserv process is started).
+any error will use default error pages defined by the program itself.
+
+you can specify the interface to only start the server on that interface:port combination:
+server {
+	listen 127.0.0.1:80;
+}
+
+you can specify what the root directory of that server is with the \[root\] directive:
+server {
+	listen 127.0.0.1:80;
+	root /data/www;
+}
+
+you can overwrite the default error pages by adding the \[error_page\] directive:
+server {
+	listen 127.0.0.1:80;
+	root /data/www;
+	error_page 401 /401.html;
+}
+or
+server {
+	listen 127.0.0.1:80;
+	root /data/www;
+	error_page 401 402 /40x.html;
+}
+
+you can specify which domains the virtual host responds the with the \[server_name\] directive:
+server {
+	listen 80;
+	root /data/www;
+	error_page 401 /401.html;
+	server_name example.com;
+}
+or 
+server {
+	listen 80;
+	root /data/www;
+	error_page 401 /401.html;
+	server_name example.com *.example-2.com;
+}
+
+you can specify the max client body size with the \[max_size\] directive. The default max_size is 1MB and value is always in MB:
+server {
+	listen 80;
+	root /data/www;
+	error_page 401 /401.html;
+	server_name example.com;
+	max_size 32;
+}
+
+you can specify the file for directory listing with the \[index\] directive. the value can be a absolute path to a file, 'auto' (generates the index.html based on the current content of that directory) and 'off' (disables directory listing):
+server {
+	listen 80;
+	root /data/www;
+	error_page 401 /401.html;
+	server_name example.com;
+	max_size 32;
+	index /index.html;
+}
+
+we can specify a location block within a server block to define routes that specify how that specific server will route incoming requests:
+server {
+	listen 80;
+	location /webpage/ {
+		root /data/www/;
+	}
+	root /fallback/www/;
+}
+
+we can specify what http methods are allowed on a specific route by adding an allow block:
+
+any request that does not match the specified route will fall back to the default routing of the server block. 
+
+
+
+
+to route an incoming request we first check which ip:port the incoming request is on. we use this to look at the best matching route:
+1) look at all the matching servers (ip:port):
+2) look at the server names to do a first filter (if no match, first server is used for that ip:port)
+3) look at uri and get all matching routes (if no match, use server root to serve)
+4) pick the longest matching one
+5) if we matched a route and that route does not allow the method, return the returncode and redirect if specified
