@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/07 12:45:41 by fmol              #+#    #+#             */
-/*   Updated: 2025/03/12 15:01:44 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/09 14:05:45 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ struct Route
 	bool isCGI;
 };
 
-struct Server
+struct ServerData
 {
 	std::string ip;
 	size_t port;
@@ -74,12 +74,12 @@ public:
 	ServerConfig &operator=(ServerConfig const &rhs);
 
 	void loadConfig(ConfigBlock const &block);
-	const std::vector<Server> &getServers() const;
+	const std::vector<ServerData> &getServers() const;
 private:
 	void loadServerBlock(ConfigBlock const &block);
-	void loadLocationBlock(ConfigBlock const &block, Server &server);
+	void loadLocationBlock(ConfigBlock const &block, ServerData &server);
 	void loadAllowBlock(ConfigBlock const &block, Route &route);
-	std::vector<Server> _servers;
+	std::vector<ServerData> _servers;
 };
 
 #endif // CONFIG_HPP

@@ -14,7 +14,7 @@
 
 class NetworkManager {
 private:
-  int _port;
+  //int _port;
 
 public:
   NetworkManager(int port);

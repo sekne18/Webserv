@@ -20,6 +20,12 @@ Server::Server(const Config& config)
   std::cout << "Server initiated on port: " << _port << "\n";
 }
 
+Server::Server(const ServerConfig& serverConfig) : _router(serverConfig)
+{
+  _epollFd = -1;
+  _isRunning = false;
+}
+
 Server::~Server()
 {
   stop();

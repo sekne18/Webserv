@@ -43,7 +43,7 @@ void ServerConfig::loadConfig(ConfigBlock const &block)
 
 void ServerConfig::loadServerBlock(ConfigBlock const &block)
 {
-	Server server;
+	ServerData server;
 	server.max_size = 1000000;
 	server.defaultIndex = "auto";
 	server.defaultRoot = "/";
@@ -108,7 +108,7 @@ void ServerConfig::loadServerBlock(ConfigBlock const &block)
 	_servers.push_back(server);
 }
 
-void ServerConfig::loadLocationBlock(ConfigBlock const &block, Server &server)
+void ServerConfig::loadLocationBlock(ConfigBlock const &block, ServerData &server)
 {
 	Route route;
 	route.isCGI = false;
@@ -199,7 +199,7 @@ void ServerConfig::loadAllowBlock(ConfigBlock const &block, Route &route)
 	}
 }
 
-const std::vector<Server> &ServerConfig::getServers() const
+const std::vector<ServerData> &ServerConfig::getServers() const
 {
 	return _servers;
 }
