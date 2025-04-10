@@ -5,58 +5,60 @@
 #include "Config.hpp"
 
 /*
-* Server manages high-level server operations, such as starting and stopping the server,
-* accepting new client connections, and processing client events.
-* It uses a NetworkManager object to handle low-level network operations.
+ * Server manages high-level server operations, such as starting and stopping the server,
+ * accepting new client connections, and processing client events.
+ * It uses a NetworkManager object to handle low-level network operations.
  * */
-Server::Server(const Config& config) 
-  : _port(config.getPort()), 
-    _serverSocket(-1), 
-    _epollFd(-1), 
-    _isRunning(false),
-    _config(config),
-    _networkManager(NetworkManager(_port))
+Server::Server(const Config &config)
+    : _port(config.getPort()),
+      _serverSocket(-1),
+      _epollFd(-1),
+      _isRunning(false),
+      _config(config),
+      _networkManager(NetworkManager(_port))
 {
-  std::cout << "Server initiated on port: " << _port << "\n";
+    std::cout << "Server initiated on port: " << _port << "\n";
 }
 
-Server::Server(const ServerConfig& serverConfig) : _router(serverConfig)
+Server::Server(const ServerConfig &serverConfig) : _router(serverConfig)
 {
-  _epollFd = -1;
-  _isRunning = false;
+    _epollFd = -1;
+    _isRunning = false;
 }
 
 Server::~Server()
 {
-  stop();
+    stop();
 }
 
 void Server::stop()
 {
-  _networkManager.closeSocket(_serverSocket);
-  _networkManager.closeEpoll(_epollFd);
-  _isRunning = false;
+    _networkManager.closeSocket(_serverSocket);
+    _networkManager.closeEpoll(_epollFd);
+    _isRunning = false;
 }
 
 void Server::start()
 {
-  try {
-    _serverSocket = _networkManager.createSocket();
-    _networkManager.bindSocket(_serverSocket, _serverAddress);
-    _networkManager.listenForConnections(_serverSocket);
-    _epollFd = _networkManager.setupEpoll(_serverSocket);
-    _isRunning = true;
-    
-    // Resize the events vector to hold up to 64 events
-    _events.resize(64); //TODO: Make the size configurable
+    try
+    {
+        _serverSocket = _networkManager.createSocket();
+        _networkManager.bindSocket(_serverSocket, _serverAddress);
+        _networkManager.listenForConnections(_serverSocket);
+        _epollFd = _networkManager.setupEpoll(_serverSocket);
+        _isRunning = true;
 
-    // Handle events (this will block)
-    handleEvents();
-  }
-  catch (const std::exception& e) {
-    std::cerr << e.what() << "\n";
-    stop();
-  }
+        // Resize the events vector to hold up to 64 events
+        _events.resize(64); // TODO: Make the size configurable
+
+        // Handle events (this will block)
+        handleEvents();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << "\n";
+        stop();
+    }
 }
 
 /*
@@ -64,33 +66,38 @@ void Server::start()
  * */
 void Server::handleEvents()
 {
-  while (_isRunning)
-  {
-    // epoll_wait() waits for events on the file descriptor in the epoll set
-    int numEvents = epoll_wait(_epollFd, _events.data(), _events.size(), -1);
-    if (numEvents == -1)
+    while (_isRunning)
     {
-      std::cerr << "Error: epoll_wait failed. " << strerror(errno) << "\n";
-      continue;
-    }
-
-    for (int i = 0; i < numEvents; ++i)
-    {
-      // Event detected, check if it's for the server or client socket
-      if (_events[i].events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP)) {
-        std::map<int, Client*>::iterator it = _clients.find(_events[i].data.fd);
-        if (it != _clients.end()) {
-          removeClient(it->second);
+        // epoll_wait() waits for events on the file descriptor in the epoll set
+        int numEvents = epoll_wait(_epollFd, _events.data(), _events.size(), -1);
+        if (numEvents == -1)
+        {
+            std::cerr << "Error: epoll_wait failed. " << strerror(errno) << "\n";
+            continue;
         }
-        continue;
-      }
-      if (_events[i].data.fd == _serverSocket) { // server socket listens for incoming connections.
-        acceptClient(); // New client connection 
-      } else {
-        processClientEvent(_events[i].data.fd); // Handle client data
-      }
+
+        for (int i = 0; i < numEvents; ++i)
+        {
+            // Event detected, check if it's for the server or client socket
+            if (_events[i].events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
+            {
+                std::map<int, Client *>::iterator it = _clients.find(_events[i].data.fd);
+                if (it != _clients.end())
+                {
+                    removeClient(it->second);
+                }
+                continue;
+            }
+            if (_events[i].data.fd == _serverSocket)
+            {                   // server socket listens for incoming connections.
+                acceptClient(); // New client connection
+            }
+            else
+            {
+                processClientEvent(_events[i].data.fd); // Handle client data
+            }
+        }
     }
-  }
 }
 
 /*
@@ -98,21 +105,23 @@ void Server::handleEvents()
  * */
 void Server::acceptClient()
 {
-  try {
-    Client *client = _networkManager.acceptConnection(_serverSocket, _epollFd);
-    _clients[client->getSocket()] = client;
-  }
-  catch (const std::exception& e) {
-    std::cerr << "Exception in acceptClient: " << e.what() << "\n";
-  }
+    try
+    {
+        Client *client = _networkManager.acceptConnection(_serverSocket, _epollFd);
+        _clients[client->getSocket()] = client;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Exception in acceptClient: " << e.what() << "\n";
+    }
 }
 
 void Server::removeClient(Client *client)
 {
-  epoll_ctl(_epollFd, EPOLL_CTL_DEL, client->getSocket(), NULL);
-  close(client->getSocket());
-  delete client;
-  _clients.erase(client->getSocket());
+    epoll_ctl(_epollFd, EPOLL_CTL_DEL, client->getSocket(), NULL);
+    close(client->getSocket());
+    _clients.erase(client->getSocket());
+    delete client;
 }
 
 /*
@@ -121,21 +130,24 @@ void Server::removeClient(Client *client)
  * */
 void Server::processClientEvent(int clientSocket)
 {
-  if (_clients.find(clientSocket) == _clients.end()) {
-    std::cerr << "Error: Client socket not found in client map.\n";
-    return;
-  }
+    if (_clients.find(clientSocket) == _clients.end())
+    {
+        std::cerr << "Error: Client socket not found in client map.\n";
+        return;
+    }
 
-  Client *client = _clients[clientSocket];
-  if (!client->readRequest()) {
-    removeClient(client);
-    return;
-  }
- 
-  if (client->hasCompleteRequest()) {
-    Request request = client->getRequest();
-    Response response(_config);
-    response.processRequest(request, clientSocket);
-    removeClient(client);
-  }
+    Client *client = _clients[clientSocket];
+    if (!client->readRequest())
+    {
+        removeClient(client);
+        return;
+    }
+
+    if (client->hasCompleteRequest())
+    {
+        Request request = client->getRequest();
+        Response response(_config);
+        response.processRequest(request, clientSocket);
+        removeClient(client);
+    }
 }
