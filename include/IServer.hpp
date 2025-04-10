@@ -7,13 +7,15 @@
 class IServer
 {
 public:
-	virtual ~IServer();
+	virtual ~IServer() = 0;
 	virtual void start() = 0;
 	virtual void stop() = 0;
 
 protected:
 	INetworkManager *_networkManager;
 	IRouter *_router;
+
+	IServer() : _networkManager(nullptr), _router(nullptr) {};
 
 private:
 	// Prevent copying

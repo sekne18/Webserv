@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 #include "Client.hpp"
+#include "INetworkManager.hpp"
 
 class NetworkManager
 {
@@ -29,14 +30,15 @@ public:
   void closeEpoll(int &epollFd);
 };
 
-class NetworkManager
+class NetworkManager : public INetworkManager
 {
 public:
   NetworkManager();
   ~NetworkManager();
 
   void initializeServer(int port, const std::string &address);
-  Request getNextRequest();
+  std::string getNextRequest();
+  void sendResponse(const std::string &response);
 
 private:
   NetworkManager(const NetworkManager &other);
