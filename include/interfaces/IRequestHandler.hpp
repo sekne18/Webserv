@@ -1,21 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   IRequestHandler.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/12 14:26:02 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/16 14:28:47 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#ifndef IREQUESTHANDLER_HPP
+#define IREQUESTHANDLER_HPP
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
-{
-}
+#include "IRequestParser.hpp"
+#include "IResponse.hpp"
+#include "IHandlerContext.hpp"
 
-Router::~Router()
+class IRequestHandler
 {
-}
+public:
+	virtual ~IRequestHandler() {};
+
+	virtual IResponse *handleRequest(const IRequestParser *request, IHandlerContext &ctx) = 0;
+};
+
+#endif // IREQUESTHANDLER_HPP

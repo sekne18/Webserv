@@ -6,107 +6,144 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 11:32:18 by fmol              #+#    #+#             */
-/*   Updated: 2025/03/15 16:55:33 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/23 14:08:23 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
 
-size_t Utils::toSizeT(std::string const &str)
+size_t toSizeT(std::string const &str)
 {
-	size_t val;
+	if (str.empty() || str[0] == '-')
+	{
+		throw std::runtime_error("Invalid size_t value: " + str);
+		return (0);
+	}
+	size_t val = 0;
 	std::istringstream iss(str);
 	iss >> val;
+	if (iss.fail() || !iss.eof())
+		throw std::runtime_error("Invalid size_t value: " + str);
 	return (val);
 }
 
-bool Utils::isDigit(char c)
+bool toSizeTNoThrow(std::string const &str, size_t &val)
+{
+	if (str.empty() || str[0] == '-')
+	{
+		return false;
+	}
+	std::istringstream iss(str);
+	iss >> val;
+	if (iss.fail() || !iss.eof())
+		return false;
+	return true;
+}
+
+
+
+bool isDigit(char c)
 {
 	return (c >= '0' && c <= '9');
 }
 
-bool Utils::isSpecial(char c)
+bool isSpecial(char c)
 {
 	return (c == '{' || c == '}' || c == ';' || c == ':');
 }
 
-bool Utils::isMark(char c)
+bool isMark(char c)
 {
 	return (c == '-' || c == '_' || c == '.' || c == '!' || c == '~' || c == '*' || c == '\'' || c == '(' || c == ')');
 }
 
-bool Utils::isUnreserved(char c)
+bool isUnreserved(char c)
 {
 	return (isAlphaNum(c) || isMark(c));
 }
 
-bool Utils::isReserved(char c)
+bool isReserved(char c)
 {
 	return (c == '$' || c == '&' || c == '+' || c == ',' || c == '/' || c == ':' || c == ';' || c == '=' || c == '?' || c == '@');
 }
 
-bool Utils::isHex(char c)
+bool isHex(char c)
 {
 	return (isDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
-bool Utils::isLowAlpha(char c)
+bool isLowAlpha(char c)
 {
 	return (c >= 'a' && c <= 'z');
 }
 
-bool Utils::isUpAlpha(char c)
+bool isUpAlpha(char c)
 {
 	return (c >= 'A' && c <= 'Z');
 }
 
-bool Utils::isAlpha(char c)
+bool isAlpha(char c)
 {
 	return (isLowAlpha(c) || isUpAlpha(c));
 }
 
-bool Utils::isIdentifier(char c)
+bool isIdentifier(char c)
 {
 	return (isAlpha(c) || isDigit(c) || c == '_' || c == '-');
 }
 
-bool Utils::isDomain(char c)
+bool isDomain(char c)
 {
 	return (isAlphaNum(c) || c == '.' || c == '-' || c == '*');
 }
 
-bool Utils::isDirective(char c)
+bool isDirective(char c)
 {
 	return (isAlpha(c) || c == '_');
 }
 
-bool Utils::isPath(char c)
+bool isPath(char c)
 {
 	return (isIdentifier(c) || c == '/' || c == '*' || c == '.');
 }
 
-bool Utils::isIp(char c)
+bool isIp(char c)
 {
 	return (isDigit(c) || c == '.');
 }
 
-bool Utils::isAlphaNum(char c)
+bool isAlphaNum(char c)
 {
 	return (isAlpha(c) || isDigit(c));
 }
 
-bool Utils::isWhitespace(char c)
+bool isWhitespace(char c)
 {
 	return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }
 
-bool Utils::contains(const std::vector<std::string>& vec, const std::string& value) {
+bool contains(const std::vector<std::string>& vec, const std::string& value) {
     return (std::find(vec.begin(), vec.end(), value) != vec.end());
 }
 
-int Utils::stringToInt(const std::string& str)
-{ 
-    // Convert to long int, specify base 10 (decimal)
-    return static_cast<int>(std::strtol(str.c_str(), NULL, 10));
+bool cleanFieldValue(std::string &fieldValue)
+{
+	std::string::iterator it = fieldValue.begin();
+	while (it != fieldValue.end())
+	{
+		if (isWhitespace(*it))
+			it = fieldValue.erase(it);
+		else
+			break;
+	}
+	it = fieldValue.end();
+	--it;
+	while (it != fieldValue.begin())
+	{
+		if (isWhitespace(*it))
+			it = fieldValue.erase(it);
+		else
+			break;
+	}
+	return true;
 }
-

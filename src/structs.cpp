@@ -1,21 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   structs.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/18 16:25:11 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/18 16:25:18 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#include "structs.hpp"
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
+bool operator==(const t_socketInfo &lhs, const int &rhs)
 {
-}
-
-Router::~Router()
-{
+    return (lhs.fd == rhs);
 }

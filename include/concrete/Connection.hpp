@@ -1,0 +1,57 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Connection.hpp                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/12 14:52:10 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/23 15:26:20 by fmol             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef CONNECTION_HPP
+#define CONNECTION_HPP
+
+#include <arpa/inet.h>
+#include <cerrno>
+#include <cstring>
+#include <queue>
+#include <stdexcept>
+#include <string>
+#include <sys/epoll.h>
+#include <unistd.h>
+#include <vector>
+
+#include "IConnection.hpp"
+#include "IDispatcher.hpp"
+#include "ILogger.hpp"
+#include "IResponse.hpp"
+#include "ConcreteResponses.hpp"
+#include "RequestParser.hpp"
+#include "Utils.hpp"
+#include "structs.hpp"
+
+class Connection : public IConnection
+{
+  public:
+    Connection(int epFd, t_socketInfo info, IDispatcher &dispatcher, const ILogger &logger);
+    ~Connection();
+
+    void onReadable(); // override;
+    void onWritable(); // override;
+  private:
+    void modifyEpoll(int events);
+    
+    int _epFd;
+    int _socket;
+    std::string _ip;
+    size_t _port;
+    bool _shouldClose;
+    IRequestParser *_RequestParser;         // owned
+    std::queue<IResponse *> _responseQueue; // owned
+    IDispatcher &_dispatcher;               // not owned
+    const ILogger &_logger;                 // not owned
+};
+
+#endif // CONNECTION_HPP

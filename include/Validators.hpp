@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 10:04:56 by fmol              #+#    #+#             */
-/*   Updated: 2025/03/12 11:22:54 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/23 13:38:10 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ void validateMethod(std::string const &method);
 void validateReturnCode(size_t code);
 void validateMaxSize(size_t size);
 bool hasCGIExtension(std::string const &path);
+
+bool isAbsoluteTarget(std::string const &target);
+bool isOriginTarget(std::string const &target);
 
 
 #endif // VALIDATORS_HPP

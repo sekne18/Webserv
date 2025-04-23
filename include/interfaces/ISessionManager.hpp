@@ -1,21 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   ISessionManager.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/12 15:23:32 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/12 15:32:54 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#ifndef ISESSIONMANAGER_HPP
+#define ISESSIONMANAGER_HPP
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
-{
-}
+#include <string>
 
-Router::~Router()
+#include "IResponse.hpp"
+
+class ISessionManager
 {
-}
+public:
+	virtual ~ISessionManager() {};
+
+	
+	virtual void attachSessionCookie(IResponse &response, const std::string &sessionId) = 0;
+	virtual void cleanExpiredSessions() = 0;
+};
+
+#endif // ISESSIONMANAGER_HPP

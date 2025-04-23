@@ -1,21 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   MessageException.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/23 09:26:34 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/23 09:26:59 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#include "MessageException.hpp"
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
+MessageException::MessageException(const std::string &message, int code)
+	: message(message), code(code)
 {
 }
 
-Router::~Router()
+MessageException::~MessageException() throw()
 {
+}
+
+const char *MessageException::what() const throw()
+{
+	return message.c_str();
 }

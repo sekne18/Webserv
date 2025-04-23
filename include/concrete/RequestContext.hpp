@@ -1,21 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   RequestContext.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/18 16:49:31 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/18 16:50:15 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#ifndef REQUESTCONTEXT_HPP
+#define REQUESTCONTEXT_HPP
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
-{
-}
+#include "IRequestContext.hpp"
 
-Router::~Router()
+class RequestContext : public IRequestContext
 {
-}
+  public:
+    RequestContext();
+    ~RequestContext();
+};
+
+#endif // REQUESTCONTEXT_HPP

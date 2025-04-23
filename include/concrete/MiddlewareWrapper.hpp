@@ -1,21 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   MiddlewareWrapper.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/16 14:25:14 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/16 14:27:12 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#ifndef MIDDLEWAREWRAPPER_HPP
+#define MIDDLEWAREWRAPPER_HPP
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
-{
-}
+#include "IRequestHandler.hpp"
+#include "IMiddleware.hpp"
 
-Router::~Router()
+class MiddlewareWrapper : public IRequestHandler
 {
-}
+public:
+	MiddlewareWrapper(IMiddleware *m, IRequestHandler *next);
+	~MiddlewareWrapper();
+
+	IResponse *handle(const IRequestParser &request, IHandlerContext &ctx); // override
+};
+
+#endif // MIDDLEWAREWRAPPER_HPP

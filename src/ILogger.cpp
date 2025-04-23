@@ -1,21 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   ILogger.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/22 09:02:13 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/22 09:06:18 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#include "ILogger.hpp"
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
+ILogger::LogLevel operator|(ILogger::LogLevel lhs, ILogger::LogLevel rhs)
 {
+    return static_cast<ILogger::LogLevel>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }
 
-Router::~Router()
+ILogger::LogLevel operator|=(ILogger::LogLevel &lhs, ILogger::LogLevel rhs)
 {
+    lhs = lhs | rhs;
+    return lhs;
 }

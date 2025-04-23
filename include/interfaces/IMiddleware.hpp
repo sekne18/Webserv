@@ -1,21 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   IMiddleware.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/16 14:17:11 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/18 16:43:36 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#ifndef IMIDDLEWARE_HPP
+#define IMIDDLEWARE_HPP
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
-{
-}
+#include "IHandlerContext.hpp"
+#include "IRequestHandler.hpp"
+#include "IRequestParser.hpp"
+#include "IResponse.hpp"
 
-Router::~Router()
+class IMiddleware
 {
-}
+  public:
+    virtual ~IMiddleware() {};
+
+    virtual IResponse *handle(const IRequestParser &request, IHandlerContext &ctx, IRequestHandler *next) = 0;
+};
+
+#endif // IMIDDLEWARE_HPP

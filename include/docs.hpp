@@ -1,21 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   docs.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/16 15:47:19 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/16 15:49:37 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+/**
+ * @defgroup interfaces
+ * @brief Interfaces for the web server.
+ */
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
-{
-}
+/**
+ * @defgroup concrete
+ * @brief Concrete implementations of the interfaces.
+ */
 
-Router::~Router()
-{
-}
+/**
+ * @defgroup utils
+ * @brief Utility classes and functions.
+ */
+
+/**
+ * @defgroup exceptions
+ * @brief Exception classes.
+ */
+
+/**
+ * @defgroup parsing
+ * @brief Parsing classes and functions.
+ */

@@ -1,21 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   IHandlerContext.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/12 16:12:52 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/18 16:43:45 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#ifndef IHANDLERCONTEXT_HPP
+#define IHANDLERCONTEXT_HPP
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
+class IHandlerContext
 {
-}
+  public:
+    virtual ~IHandlerContext() {};
+};
 
-Router::~Router()
-{
-}
+#endif // IHANDLERCONTEXT_HPP

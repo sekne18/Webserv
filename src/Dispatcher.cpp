@@ -1,21 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   Dispatcher.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/17 13:19:35 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/18 15:26:03 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#include "Dispatcher.hpp"
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
+Dispatcher::Dispatcher(const ILogger &logger)
+    : _logger(logger)
 {
 }
 
-Router::~Router()
+Dispatcher::~Dispatcher()
 {
+}
+
+IResponse *Dispatcher::dispatch(const IRequestParser *request, IRequestContext &ctx)
+{
+    (void)request;
+    (void)ctx;
+    return new ErrorResponse(404, "Not Found");
+}
+
+void Dispatcher::loadFromConfig(const ServerConfig &config)
+{
+    // Load the config
+    (void)config;
 }
