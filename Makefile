@@ -10,7 +10,9 @@ INC_FLAGS := $(addprefix -I, $(INC_DIRS))
 
 FILES := main.cpp Lexer.cpp Utils.cpp Parser.cpp ServerConfig.cpp Validators.cpp Server.cpp \
 			RequestParser.cpp Dispatcher.cpp NetworkManager.cpp StreamLogger.cpp structs.cpp assert.cpp \
-			Connection.cpp ConcreteResponses.cpp ILogger.cpp MessageException.cpp 
+			Connection.cpp ConcreteResponses.cpp ILogger.cpp MessageException.cpp ResponseWriter.cpp \
+			ConcreteMiddleware.cpp ConcreteRequestHandlers.cpp MiddlewareChainBuilder.cpp AMiddleware.cpp \
+			RequestContext.cpp
 SRCS := $(addprefix $(SRC_DIR)/, $(FILES))
 OBJS := $(addprefix $(OBJ_DIR)/, $(FILES:.cpp=.o))
 NAME := webserv

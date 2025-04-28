@@ -1,30 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   structs.hpp                                        :+:      :+:    :+:   */
+/*   IResponseWriter.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/17 16:32:59 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/25 11:44:12 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/24 08:11:44 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/24 08:14:55 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef STRUCTS_HPP
-#define STRUCTS_HPP
+#ifndef IRESPONSEWRITER_HPP
+#define IRESPONSEWRITER_HPP
 
 #include <string>
-#include <sys/types.h>
 
-typedef struct socketInfo
+#include "IResponse.hpp"
+
+class IResponseWriter
 {
-    int fd;
-    std::string ip;
-    size_t port;
-    size_t listenPort;
-} t_socketInfo;
+  public:
+	virtual ~IResponseWriter() {};
 
-bool operator==(const t_socketInfo &lhs, const int &rhs);
-bool operator==(const std::pair<int, t_socketInfo> &lhs, const int &rhs);
+	virtual void start(const IResponse &response) = 0;
+	virtual std::string getNextData(size_t bytes) = 0;
+	virtual void advanceData(size_t bytes) = 0;
+	virtual bool isComplete() const = 0;
 
-#endif // STRUCTS_HPP
+};
+
+#endif // IRESPONSEWRITER_HPP

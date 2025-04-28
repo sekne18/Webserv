@@ -112,7 +112,7 @@ void printRoute(const Route &route, int indentLevel)
 			std::cout << indent << "    " << it->first << " -> " << it->second << "\n";
 		}
 	}
-	std::cout << indent << "  CGI Enabled: " << (route.isCGI ? "Yes" : "No") << "\n";
+	std::cout << indent << "  CGI Enabled: " << (route.isCgi ? "Yes" : "No") << "\n";
 }
 
 void printServer(const ServerData &server)

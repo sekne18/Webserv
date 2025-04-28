@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/07 12:45:41 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 15:15:19 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 13:31:25 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "Utils.hpp"
 #include "Validators.hpp"
@@ -39,18 +40,16 @@ struct Route
     size_t returnCode;
     std::string returnPath;
 
-    std::string root;
-    std::string locationPath;
+    std::string root; //reroute to this prefix
+    std::string locationPath; // incoming path prefix
 
-    std::string index;
+    std::string index; // index file, auto or off
 
     std::vector<std::string> allowedMethods;
-    size_t disallowedReturnCode;
-    std::string disallowedPath;
+    size_t disallowedReturnCode; // return code if method is not allowed
+    std::string disallowedPath; // path to redirect to if method is not allowed
 
-    std::map<size_t, std::string> errorPages;
-
-    bool isCGI;
+    bool isCgi;
 };
 
 struct ServerData
@@ -59,7 +58,7 @@ struct ServerData
     size_t port;
     std::vector<Route> routes;
     std::vector<std::string> serverNames;
-    std::map<size_t, std::string> errorPages;
+    std::map<size_t, std::string *> errorPages;
     std::string defaultRoot;
     std::string defaultIndex;
     size_t max_size;

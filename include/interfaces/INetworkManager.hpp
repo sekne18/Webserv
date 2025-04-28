@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:12:33 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 16:42:48 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 07:54:52 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class INetworkManager
     virtual ~INetworkManager() {};
 
     virtual void run() = 0;
+    virtual void stop() = 0;
     virtual void listenOn(const std::string &ip, size_t port) = 0;
     virtual void setDispatcher(IDispatcher *dispatcher) = 0;
     /**

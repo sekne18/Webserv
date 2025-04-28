@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:26:02 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/16 14:28:47 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/24 15:43:41 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class IRequestHandler
 public:
 	virtual ~IRequestHandler() {};
 
-	virtual IResponse *handleRequest(const IRequestParser *request, IHandlerContext &ctx) = 0;
+	virtual IResponse *handle(const IRequestParser &request, IHandlerContext *ctx) = 0;
 };
 
 #endif // IREQUESTHANDLER_HPP

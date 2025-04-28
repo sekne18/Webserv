@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 10:05:41 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 11:29:34 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/24 09:58:44 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,20 +134,18 @@ bool hasCGIExtension(std::string const &path)
 
 bool isAbsoluteTarget(std::string const &target)
 {
-	if (target.size() < 2)
+	if (target.size() < 9)
 		return (false);
-	if (target[0] == '/')
+	if (target.find("http://") == 0)
 		return (true);
 	return (false);
 }
 
 bool isOriginTarget(std::string const &target)
 {
-	if (target.size() < 2)
+	if (target.empty())
 		return (false);
 	if (target[0] == '/')
 		return (true);
-	else if (target.substr(0, 2) == "*.")
-		return (false);
 	return (false);
 }

@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/11 16:33:45 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 15:17:45 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 15:57:21 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void ServerConfig::loadServerBlock(ConfigBlock const &block)
 {
     ServerData server;
     server.max_size = 1000000;
-    server.defaultIndex = "auto";
+    server.defaultIndex = "off";
     server.defaultRoot = "/";
     if (block.name != "server")
         throw std::runtime_error("Server block must be named 'server'");
@@ -90,9 +90,16 @@ void ServerConfig::loadServerBlock(ConfigBlock const &block)
         }
         else if (it->first == "error_page")
         {
-            validateReturnCode(toSizeT(it->second[0]));
-            validatePath(it->second[1]);
-            server.errorPages[toSizeT(it->second[0])] = it->second[1];
+            for (std::vector<std::string>::const_iterator errorIt = it->second.begin(); errorIt != it->second.end(); errorIt += 2)
+            {
+                validateReturnCode(toSizeT(*errorIt));
+                validatePath(*(errorIt + 1));
+
+                std::string *content = loadFile(*(errorIt + 1));
+                if (content == 0)
+                    throw std::runtime_error("Failed to load error page: " + *(errorIt + 1));
+                server.errorPages[toSizeT(*errorIt)] = content;
+            }
         }
         else if (it->first == "index")
         {
@@ -111,7 +118,7 @@ void ServerConfig::loadServerBlock(ConfigBlock const &block)
 void ServerConfig::loadLocationBlock(ConfigBlock const &block, ServerData &server)
 {
     Route route;
-    route.isCGI = false;
+    route.isCgi = false;
     route.isReturn = false;
     route.index = server.defaultIndex;
     route.root = server.defaultRoot;
@@ -126,7 +133,7 @@ void ServerConfig::loadLocationBlock(ConfigBlock const &block, ServerData &serve
             validatePath(it->second[0]);
             route.locationPath = it->second[0];
             if (hasCGIExtension(route.locationPath))
-                route.isCGI = true;
+                route.isCgi = true;
         }
         else if (it->first == "root")
         {
@@ -149,12 +156,6 @@ void ServerConfig::loadLocationBlock(ConfigBlock const &block, ServerData &serve
             if (it->second[0] != "auto" && it->second[0] != "off")
                 validatePath(it->second[0]);
             route.index = it->second[0];
-        }
-        else if (it->first == "error_page")
-        {
-            validateReturnCode(toSizeT(it->second[0]));
-            validatePath(it->second[1]);
-            route.errorPages[toSizeT(it->second[0])] = it->second[1];
         }
         else
             throw std::runtime_error("Invalid directive in location block");

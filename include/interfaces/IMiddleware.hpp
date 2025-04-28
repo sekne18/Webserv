@@ -5,25 +5,27 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/16 14:17:11 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 16:43:36 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/24 11:29:31 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/24 15:08:56 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef IMIDDLEWARE_HPP
 #define IMIDDLEWARE_HPP
 
-#include "IHandlerContext.hpp"
 #include "IRequestHandler.hpp"
-#include "IRequestParser.hpp"
-#include "IResponse.hpp"
 
-class IMiddleware
+class IMiddleware : public IRequestHandler
 {
-  public:
-    virtual ~IMiddleware() {};
+public:
+	/**
+	 * @brief Destructor
+	 * @details Concrete classes should free next handler if they have one. (they own it)
+	 */
+	virtual ~IMiddleware() {};
 
-    virtual IResponse *handle(const IRequestParser &request, IHandlerContext &ctx, IRequestHandler *next) = 0;
+	virtual const IRequestHandler *getNext() const = 0;
+	virtual void setNext(IRequestHandler *next) = 0;
 };
 
 #endif // IMIDDLEWARE_HPP

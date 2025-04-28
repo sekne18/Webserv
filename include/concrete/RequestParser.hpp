@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:34:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 15:05:16 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 10:59:49 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@
 #include "ILogger.hpp"
 #include "Validators.hpp"
 
-
 class RequestParser : public IRequestParser
 {
   public:
@@ -37,6 +36,7 @@ class RequestParser : public IRequestParser
     const std::string &getMethod() const;                         // override;
     const std::string &getTarget() const;                           // override;
     const std::string &getVersion() const;                        // override;
+    const std::string &getHost() const;                           // override;
     const std::multimap<std::string, std::string> &getHeaders() const; // override;
     const std::string &getBody() const;                           // override;
     void reset();                                                 // override;
@@ -73,8 +73,8 @@ class RequestParser : public IRequestParser
     std::string _body;
     bool _isComplete;
     bool _isChunked;
+    bool _noBody;
     size_t _contentLength;
-    size_t _contentLengthRead;
 };
 
 #endif // REQUESTPARSER_HPP

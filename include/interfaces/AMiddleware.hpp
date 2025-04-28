@@ -1,30 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   structs.hpp                                        :+:      :+:    :+:   */
+/*   AMiddleware.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/17 16:32:59 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/25 11:44:12 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/24 12:56:40 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/24 13:02:39 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef STRUCTS_HPP
-#define STRUCTS_HPP
+#ifndef AMIDDLEWARE_HPP
+#define AMIDDLEWARE_HPP
 
-#include <string>
-#include <sys/types.h>
+#include "IMiddleware.hpp"
 
-typedef struct socketInfo
+class AMiddleware : public IMiddleware
 {
-    int fd;
-    std::string ip;
-    size_t port;
-    size_t listenPort;
-} t_socketInfo;
+public:
+	virtual ~AMiddleware();
 
-bool operator==(const t_socketInfo &lhs, const int &rhs);
-bool operator==(const std::pair<int, t_socketInfo> &lhs, const int &rhs);
+	const IRequestHandler *getNext() const; // override
+	void setNext(IRequestHandler *next); // override
+protected:
+	AMiddleware();
+	IRequestHandler *_next; // owned
+};
 
-#endif // STRUCTS_HPP
+#endif // AMIDDLEWARE_HPP

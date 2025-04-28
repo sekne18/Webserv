@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:38:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 15:12:27 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/24 15:42:00 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ RequestParser::RequestParser(const ILogger &logger)
       _errCode(0),
       _isComplete(false),
       _isChunked(false),
-      _contentLength(0),
-      _contentLengthRead(0)
+      _noBody(true),
+      _contentLength(0)
 {
 }
 
@@ -32,7 +32,13 @@ void RequestParser::setErrorState(const std::string &errMsg, size_t errCode)
     _errMsg = errMsg;
     _errCode = errCode;
     _state = ERROR;
+    _isComplete = true;
     _logger.logError(errMsg + " (code: " + toString(errCode) + ")");
+}
+
+const std::string &RequestParser::getHost() const
+{
+    return _host;
 }
 
 void RequestParser::parse(const std::string &data)
@@ -104,21 +110,11 @@ void RequestParser::parseLine(const std::string &line)
     {
         case START_1:
             parseStartLine(line);
-            _state = HEADERS;
-            _logger.logDebug("state => HEADERS");
             break;
         case START_2:
             parseStartLine(line);
-            _state = HEADERS;
-            _logger.logDebug("state => HEADERS");
             break;
         case HEADERS:
-            if (line.empty())
-            {
-                _state = BODY;
-                _logger.logDebug("state => BODY");
-                break;
-            }
             parseHeaders(line);
             break;
         case BODY:
@@ -160,7 +156,7 @@ size_t RequestParser::getErrorCode() const
 
 bool RequestParser::isBodyExpected() const
 {
-    return (_contentLength > 0 || _isChunked);
+    return ((_isChunked || _contentLength > 0) && !_noBody);
 }
 
 
@@ -209,11 +205,11 @@ void RequestParser::reset()
     _body.clear();
     _buffer.clear();
     _contentLength = 0;
-    _contentLengthRead = 0;
     flushBuffer();
     _state = START_1;
     _isComplete = false;
     _isChunked = false;
+    _noBody = true;
 }
 
 void RequestParser::parseStartLine(const std::string &line)
@@ -327,6 +323,15 @@ void RequestParser::parseHeaders(const std::string &line)
             setErrorState("Invalid Content-Length value", 400);
             return;
         }
+        if (_contentLength > 8000)
+        {
+            setErrorState("Content-Length Too Long", 413);
+            return;
+        }
+        if (_contentLength == 0)
+            _noBody = true;
+        else
+            _noBody = false;
     }
     else if (key == "transfer-encoding")
     {
@@ -336,6 +341,16 @@ void RequestParser::parseHeaders(const std::string &line)
         {
 	        setErrorState("Unsupported Transfer-Encoding", 501);
 	        return;
+        }
+    }
+    else if (key == "host")
+    {
+        if (_host.empty())
+            _host = value;
+        else
+        {
+            setErrorState("Host already set", 400);
+            return;
         }
     }
     else

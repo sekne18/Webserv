@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:14:31 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 16:43:49 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/24 09:25:31 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class IConnection
 
     virtual void onReadable() = 0;
     virtual void onWritable() = 0;
+    virtual bool shouldClose() = 0;
 };
 
 #endif // ICONNECTION_HPP

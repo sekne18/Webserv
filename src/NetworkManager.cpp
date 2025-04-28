@@ -6,14 +6,14 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 16:01:21 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 10:03:50 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 11:20:07 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "NetworkManager.hpp"
 
 NetworkManager::NetworkManager(const ILogger &logger, size_t maxEvents)
-    : _maxEvents(maxEvents), _epFd(-1), _listeners(), _connections(), _logger(logger)
+    : _shouldStop(false), _maxEvents(maxEvents), _epFd(-1), _dispatcher(0), _logger(logger)
 {
     _epFd = epoll_create1(0);
     if (_epFd == -1)
@@ -22,7 +22,22 @@ NetworkManager::NetworkManager(const ILogger &logger, size_t maxEvents)
 
 NetworkManager::~NetworkManager()
 {
-    // cleanup (in c++98)
+    while (!_connections.empty())
+    {
+        unregisterSocket(_connections.begin()->first);
+    }
+    for (std::vector<t_socketInfo>::iterator it = _listeners.begin(); it != _listeners.end(); ++it)
+    {
+        unregisterSocket(it->fd);
+        close(it->fd);
+    }
+    _listeners.clear();
+    if (_epFd != -1)
+    {
+        close(_epFd);
+        _epFd = -1;
+    }
+    _logger.logInfo("NetworkManager stopped");
 }
 
 void NetworkManager::setDispatcher(IDispatcher *dispatcher)
@@ -34,7 +49,7 @@ int NetworkManager::createSocket(const std::string &ip, size_t port)
 {
     for (std::vector<t_socketInfo>::const_iterator it = _listeners.begin(); it != _listeners.end(); ++it)
     {
-        if ((it->ip == ip || ip == "any" || it->ip == "any") && it->port == port)
+        if (isMatchInterface(it->ip, it->port, ip, port))
             throw SocketAlreadyInUseException("Socket already in use: " + ip + ":" + toString(port));
     }
     struct sockaddr_in addr;
@@ -46,16 +61,17 @@ int NetworkManager::createSocket(const std::string &ip, size_t port)
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1)
         throw std::runtime_error("Failed to create socket: " + std::string(strerror(errno)));
-    if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
-    {
-        close(fd);
-        throw std::runtime_error("Failed to bind socket: " + std::string(strerror(errno)));
-    }
+    // makes sure the socket is opened even when it is in TIME_WAIT state
     int optval = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
     {
         close(fd);
         throw std::runtime_error("Failed to set socket options: " + std::string(strerror(errno)));
+    }
+    if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    {
+        close(fd);
+        throw std::runtime_error("Failed to bind socket: " + std::string(strerror(errno)));
     }
     return (fd);
 }
@@ -66,6 +82,7 @@ void NetworkManager::listenOn(const std::string &ip, size_t port)
     t_socketInfo l;
     l.ip = ip;
     l.port = port;
+    l.listenPort = port;
     try
     {
         l.fd = createSocket(ip, port);
@@ -131,19 +148,21 @@ void NetworkManager::unregisterSocket(int fd)
     {
         delete _connections[fd];
         _connections.erase(fd);
-        if (close(fd) == -1)
-            _logger.logError("Failed to close socket" + std::string(strerror(errno)));
-        else
-            _logger.logInfo("Socket " + toString(fd) + " unregistered");
+        _logger.logInfo("Socket " + toString(fd) + " unregistered");
     }
     else
         _logger.logDebug("Socket " + toString(fd) + " not found in connections");
 }
 
+void NetworkManager::stop()
+{
+    _shouldStop = true;
+}
+
 void NetworkManager::run()
 {
     std::vector<struct epoll_event> events(_maxEvents);
-    while (true)
+    while (!_shouldStop)
     {
         _logger.logDebug("Waiting for events...");
         int nrEvents = epoll_wait(_epFd, events.data(), _maxEvents, -1);
@@ -168,7 +187,14 @@ void NetworkManager::run()
             else if (events[i].events & EPOLLIN)
             {
                 if (_connections.find(events[i].data.fd) != _connections.end())
+                {
                     _connections[events[i].data.fd]->onReadable();
+                    if (_connections[events[i].data.fd]->shouldClose())
+                    {
+                        unregisterSocket(events[i].data.fd);
+                        _logger.logInfo("Connection closed on socket " + toString(events[i].data.fd));
+                    }
+                }
                 else if (std::find(_listeners.begin(), _listeners.end(), events[i].data.fd) != _listeners.end())
                 {
                     struct sockaddr_in addr;
@@ -192,6 +218,7 @@ void NetworkManager::run()
                             info.fd = newFd;
                             info.ip = inet_ntoa(addr.sin_addr);
                             info.port = ntohs(addr.sin_port);
+                            info.listenPort = std::find(_listeners.begin(), _listeners.end(), events[i].data.fd)->listenPort;
                             _connections[newFd] = new Connection(_epFd, info, *_dispatcher, _logger);
                         }
                         catch (std::bad_alloc &e)
@@ -210,7 +237,14 @@ void NetworkManager::run()
             else if (events[i].events & EPOLLOUT)
             {
                 if (_connections.find(events[i].data.fd) != _connections.end())
+                {
                     _connections[events[i].data.fd]->onWritable();
+                    if (_connections[events[i].data.fd]->shouldClose())
+                    {
+                        unregisterSocket(events[i].data.fd);
+                        _logger.logInfo("Connection closed on socket " + toString(events[i].data.fd));
+                    }
+                }
                 else
                     _logger.logError("EPOLLOUT on unknown socket " + toString(events[i].data.fd));
             }

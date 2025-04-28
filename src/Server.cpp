@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 15:37:09 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 16:52:10 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 07:55:15 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,4 +40,9 @@ void Server::listenOn(const std::string &ip, size_t port)
 void Server::run()
 {
     _networkManager->run();
+}
+
+void Server::stop()
+{
+    _networkManager->stop();
 }

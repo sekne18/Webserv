@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 11:07:34 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/18 16:42:56 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 07:53:03 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,11 @@ class IServer
      * @note This method should block until the server is stopped.
      */
     virtual void run() = 0;
+
+    /**
+     * @brief Stop the server.
+     */
+    virtual void stop() = 0;
 };
 
 #endif // ISERVER_HPP

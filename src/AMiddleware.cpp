@@ -1,30 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   structs.hpp                                        :+:      :+:    :+:   */
+/*   AMiddleware.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/17 16:32:59 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/25 11:44:12 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/24 12:58:07 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/28 09:27:16 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef STRUCTS_HPP
-#define STRUCTS_HPP
+#include "AMiddleware.hpp"
 
-#include <string>
-#include <sys/types.h>
-
-typedef struct socketInfo
+AMiddleware::AMiddleware() : _next(0)
 {
-    int fd;
-    std::string ip;
-    size_t port;
-    size_t listenPort;
-} t_socketInfo;
+}
 
-bool operator==(const t_socketInfo &lhs, const int &rhs);
-bool operator==(const std::pair<int, t_socketInfo> &lhs, const int &rhs);
+AMiddleware::~AMiddleware()
+{
+	if (_next)
+		delete _next;
+}
 
-#endif // STRUCTS_HPP
+const IRequestHandler *AMiddleware::getNext() const
+{
+	return _next;
+}
+
+void AMiddleware::setNext(IRequestHandler *next)
+{
+	if (_next)
+		delete _next;
+	_next = next;
+}

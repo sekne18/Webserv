@@ -6,12 +6,13 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 13:07:56 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 10:07:46 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 09:24:00 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iomanip>
 #include <iostream>
+#include <csignal>
 
 #include "Dispatcher.hpp"
 #include "Lexer.hpp"
@@ -30,11 +31,21 @@ void printUsage()
     std::cout << "  --log-level <level>     Set the log level (info, debug, warning, error)\n";
 }
 
+IServer *g_server = 0;
+
+void sigIntHandler(int signum)
+{
+    (void)signum;
+    if (g_server)
+        g_server->stop();
+}
+
 int main(int argc, char **argv)
 {
+    std::signal(SIGINT, sigIntHandler);
     std::string logFile = "";
     std::string configFile = "server.conf";
-    ILogger::LogLevel logLevel = ILogger::LOG_DEBUG | ILogger::LOG_REQUEST | ILogger::LOG_RESPONSE | ILogger::LOG_ERROR | ILogger::LOG_WARNING | ILogger::LOG_INFO;
+    ILogger::LogLevel logLevel = ILogger::LOG_DEBUG | ILogger::LOG_ERROR | ILogger::LOG_WARNING | ILogger::LOG_INFO;
     if (argc > 1)
     {
         for (int i = 1; i < argc; ++i)
@@ -51,13 +62,13 @@ int main(int argc, char **argv)
             {
                 std::string level = argv[++i];
                 if (level == "info")
-                    logLevel = ILogger::LOG_INFO | ILogger::LOG_REQUEST | ILogger::LOG_RESPONSE | ILogger::LOG_ERROR | ILogger::LOG_WARNING;
+                    logLevel = ILogger::LOG_INFO | ILogger::LOG_ERROR | ILogger::LOG_WARNING;
                 else if (level == "debug")
-                    logLevel = ILogger::LOG_DEBUG | ILogger::LOG_REQUEST | ILogger::LOG_RESPONSE | ILogger::LOG_ERROR | ILogger::LOG_WARNING | ILogger::LOG_INFO;
+                    logLevel = ILogger::LOG_DEBUG | ILogger::LOG_ERROR | ILogger::LOG_WARNING | ILogger::LOG_INFO;
                 else if (level == "warning")
-                    logLevel = ILogger::LOG_WARNING | ILogger::LOG_REQUEST | ILogger::LOG_RESPONSE | ILogger::LOG_ERROR;
+                    logLevel = ILogger::LOG_WARNING | ILogger::LOG_ERROR;
                 else if (level == "error")
-                    logLevel = ILogger::LOG_ERROR | ILogger::LOG_REQUEST | ILogger::LOG_RESPONSE;
+                    logLevel = ILogger::LOG_ERROR;
                 else
                     std::cerr << "Unknown log level: " << level << std::endl;
             }
@@ -90,7 +101,7 @@ int main(int argc, char **argv)
     StreamLogger::getInstance()->setLogLevel(logLevel);
     try
     {
-        Server server(*StreamLogger::getInstance());
+        g_server = new Server(*StreamLogger::getInstance());
         Dispatcher dispatcher(*StreamLogger::getInstance());
         {
             Lexer lexer(file);
@@ -101,15 +112,22 @@ int main(int argc, char **argv)
             dispatcher.loadFromConfig(serverConfig);
             const std::vector<std::pair<std::string, size_t> > socketInfo = serverConfig.getSocketInfo();
             for (std::vector<std::pair<std::string, size_t> >::const_iterator it = socketInfo.begin(); it != socketInfo.end(); ++it)
-                server.listenOn(it->first, it->second);
+                g_server->listenOn(it->first, it->second);
         }
-        server.setDispatcher(&dispatcher);
-        server.run();
+        g_server->setDispatcher(&dispatcher);
+        g_server->run();
     }
     catch (std::exception &e)
     {
         StreamLogger::getInstance()->logError(std::string(e.what()));
+        delete g_server;
+        g_server = 0;
+        StreamLogger::destroyInstance();
+        return (1);
+    
     }
+    delete g_server;
+    g_server = 0;
     StreamLogger::destroyInstance();
-    return (1);
+    return (0);
 }

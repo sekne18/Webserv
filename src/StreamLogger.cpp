@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:38:47 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 09:53:20 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/24 09:30:48 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,30 +47,6 @@ void StreamLogger::setLogLevel(LogLevel level)
 void StreamLogger::setLogStream(std::ostream &stream)
 {
     _logStream = &stream;
-}
-
-void StreamLogger::logRequest(const IRequestParser &request) const
-{
-    if (!(_logLevel & LOG_REQUEST))
-        return;
-    if (!request.isComplete())
-    {
-        *_logStream << "Request is not complete" << "\n";
-        return;
-    }
-    *_logStream << "Request: " << request.getMethod() << " " << request.getTarget() << " " << request.getVersion() << "\n";
-}
-
-void StreamLogger::logResponse(const IResponse &response) const
-{
-    if (!(_logLevel & LOG_RESPONSE))
-        return;
-    if (!response.isComplete())
-    {
-        *_logStream << "Response is not complete" << "\n";
-        return;
-    }
-    *_logStream << "Response: " << response.getStatus() << "\n";
 }
 
 void StreamLogger::logError(const std::string &error) const

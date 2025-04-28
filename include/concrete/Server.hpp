@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 09:30:24 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/17 13:24:04 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 07:52:45 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ public:
 	void setDispatcher(IDispatcher *dispatcher);	   // override;
 	void listenOn(const std::string &ip, size_t port); // override;
 	void run();										   // override;
+	void stop(); // override;
 private:
 	INetworkManager *_networkManager; // owned
 	ISessionManager *_sessionManager; // owned

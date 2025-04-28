@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 12:31:00 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/22 12:16:18 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/24 09:30:59 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ public:
 	void setLogLevel(LogLevel level);
 	void setLogStream(std::ostream &stream);
 
-	void logRequest(const IRequestParser &request) const;
-	void logResponse(const IResponse &response) const;
 	void logError(const std::string &error) const;
 	void logInfo(const std::string &info) const;
 	void logDebug(const std::string &debug) const;

@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 16:47:27 by fmol              #+#    #+#             */
-/*   Updated: 2025/03/12 09:58:43 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 10:09:17 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,12 @@ void Parser::parseErrorPageDirective(ConfigBlock &config_block)
 	if (_curr_token.type != TokenType::ERROR_PAGE)
 		throw std::runtime_error(getErrMsg("error_page", _curr_token.value));
 	advance();
-	std::vector<std::string> directive_values;
+	if (config_block.directives.find("error_page") == config_block.directives.end())
+	{
+		std::vector<std::string> directive_values;
+		config_block.directives["error_page"] = directive_values;
+	}
+	std::vector<std::string> &directive_values = config_block.directives["error_page"];
 	if (_curr_token.type != TokenType::NUMBER)
 		throw std::runtime_error(getErrMsg("Number", _curr_token.value));
 	directive_values.push_back(_curr_token.value);
@@ -179,7 +184,6 @@ void Parser::parseErrorPageDirective(ConfigBlock &config_block)
 	if (_curr_token.type != TokenType::SEMICOLON)
 		throw std::runtime_error(getErrMsg(";", _curr_token.value));
 	advance();
-	config_block.directives["error_page"] = directive_values;
 }
 
 void Parser::parseMaxSizeDirective(ConfigBlock &config_block)

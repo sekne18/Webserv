@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 10:59:32 by fmol              #+#    #+#             */
-/*   Updated: 2025/03/11 15:23:08 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 14:20:51 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,7 +168,7 @@ bool Lexer::matchDirective(Token &token)
 	while (isDirective(peek()))
 		token.value += advance();
 	char c = peek();
-	if (!isWhitespace(c) && c != '{')
+	if (!isWhitespace(c) && c != '{' && c != ';')
 		return (false);
 	if (setDirective(token))
 		return (true);

@@ -5,54 +5,100 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/18 15:22:47 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 16:27:52 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/24 08:33:42 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/24 09:49:21 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConcreteResponses.hpp"
 
-ErrorResponse::ErrorResponse(size_t code, const std::string &message)
-    : _code(code), _message(message)
+ConcreteResponse::ConcreteResponse() : _code(200), _message("OK"), _body(), _transferEncoding(TE_NONE)
+{}
+
+ConcreteResponse::ConcreteResponse(size_t code, const std::string &message)
+    : _code(code), _message(message), _body(), _transferEncoding(TE_NONE)
 {
+    if (code >= 400)
+        _headers.push_back(std::make_pair("Connection", "close"));
 }
 
-ErrorResponse::~ErrorResponse()
+ConcreteResponse::~ConcreteResponse() 
+{}
+
+size_t ConcreteResponse::getStatus() const 
 {
+    return _code;
 }
 
-std::string ErrorResponse::getStatus() const
+const std::string &ConcreteResponse::getStatusMessage() const 
 {
-    return "HTTP/1.1 " + toString(_code) + " " + _message + "\r\n";
+    return _message;
 }
 
-std::string ErrorResponse::getHeaders() const
+const std::vector<std::pair<std::string, std::string> > &ConcreteResponse::getHeaders() const 
 {
-    return "Content-Type: text/html\r\nContent-Length: " \
-    + toString(getNextData().size()) + "\r\n\r\n";
+    return _headers;
 }
 
-void ErrorResponse::fetchData()
+const std::string &ConcreteResponse::getBody() const 
 {
-    // No data to fetch
+    return _body;
 }
 
-bool ErrorResponse::hasAvailableData() const
+void ConcreteResponse::setStatus(size_t status) 
 {
-    return false;
+    _code = status;
 }
 
-std::string ErrorResponse::getNextData() const
+void ConcreteResponse::setStatusMessage(const std::string &statusMessage) 
 {
-    return getStatus();
+    _message = statusMessage;
 }
 
-void ErrorResponse::shiftData(size_t bytes)
+void ConcreteResponse::addHeader(const std::string &key, const std::string &value) 
 {
-    // No data to shift
+    _headers.push_back(std::make_pair(key, value));
 }
 
-bool ErrorResponse::isComplete() const
+void ConcreteResponse::setBody(const std::string &body) 
 {
-    return true;
+    _body = body;
 }
+
+void ConcreteResponse::appendBody(const std::string &body) 
+{
+    _body += body;
+}
+
+std::string ConcreteResponse::getStatusLine() const
+{
+    return "HTTP/1.1 " + toString(_code) + " " + _message;
+}
+
+std::string ConcreteResponse::serializeHeaders() const
+{
+    std::string headers;
+    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+    {
+        headers += it->first + ": " + it->second + "\r\n";
+    }
+    return headers;
+}
+
+std::string ConcreteResponse::serialize() const
+{
+    std::string response = getStatusLine() + "\r\n";
+    response += serializeHeaders();
+    if (_transferEncoding == TE_NONE)
+    {
+        response += "Content-Length: " + toString(_body.size()) + "\r\n";
+    }
+    else
+    {
+        response += "Transfer-Encoding: chunked\r\n";
+    }
+    response += "\r\n";
+    response += _body;
+    return response;
+}
+

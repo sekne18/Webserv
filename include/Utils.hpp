@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 10:58:55 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/23 14:07:56 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/28 14:32:43 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,16 @@
 
 #include <string>
 #include <sstream>
+#include <map>
 #include <vector>
 #include <algorithm>
+#include <fstream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <cstring>
+#include <stdexcept>
+
 
 template <typename T>
 std::string toString(T val)
@@ -25,6 +33,11 @@ std::string toString(T val)
 	oss << val;
 	return (oss.str());
 }
+
+std::string *loadFile(std::string const &path);
+bool isDirectory(std::string const &path);
+std::string generateDirectoryListing(std::string const &path);
+const std::string &getGenericStatusMessage(size_t statusCode);
 
 size_t toSizeT(std::string const &str);
 bool toSizeTNoThrow(std::string const &str, size_t &val);
@@ -45,6 +58,9 @@ bool isPath(char c);
 bool isIp(char c);
 bool isAlphaNum(char c);
 bool isWhitespace(char c);
+
+bool isMatchInterface(std::string const &ip1, size_t port1,
+						 std::string const &ip2, size_t port2);
 
 bool contains(std::vector<std::string> const &vec, std::string const &str);
 
