@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:30:32 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 08:51:03 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 14:52:55 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,7 @@ void Connection::onReadable()
                 if (!_RequestParser->isErroneous())
                 {
                     response = _dispatcher.dispatch(_RequestParser, ctx);
+                    _RequestParser->reset();
                     if (response->getStatus() >= 400)
                         _shouldClose = true;
                 }

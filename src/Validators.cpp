@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 10:05:41 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/24 09:58:44 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 15:54:59 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,20 +89,20 @@ void validatePath(std::string const &path)
 {
 	if (path.size() > 1024)
 		throw std::runtime_error("Path too long: " + path);
-	if (path[0] == '/')
+	size_t pos1 = path.find_last_of("*");
+	size_t pos2 = path.find_last_of("/");
+	if (pos1 != std::string::npos && pos2 != std::string::npos && pos1 < pos2)
+		throw std::runtime_error("Invalid path: " + path);
+	if (path.find("*.") != std::string::npos)
 	{
-
-	}
-	else if (path.substr(0, 2) == "*.")
-	{
-		std::string extension = path.substr(2);
+		std::string extension = path.substr(path.find("*.") + 2);
 		if (extension.size() > 63)
 			throw std::runtime_error("Extension too long: " + extension);
 		if (!contains(getsupportedExtensions(), extension))
 			throw std::runtime_error("Unsupported extension: " + extension);
 	}
-	else
-		throw std::runtime_error("Path must start with a '/' or an \"*.\": " + path);
+	if (path[0] != '/')
+		throw std::runtime_error("Path must start with a '/', end with \"*.cgiExtension\" in case of cgi: " + path);
 }
 
 void validateMethod(std::string const &method)

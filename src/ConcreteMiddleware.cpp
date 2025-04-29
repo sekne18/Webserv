@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 12:59:25 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 16:07:58 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 15:08:07 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ LimitSizeMiddleware::~LimitSizeMiddleware()
 {
 }
 
-IResponse *LimitSizeMiddleware::handle(const IRequestParser &request, IHandlerContext *ctx)
+IResponse *LimitSizeMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
 {
 	if (request.getBody().size() > _maxSize)
 	{
@@ -44,7 +44,7 @@ SafeguardMiddleware::~SafeguardMiddleware()
 {
 }
 
-IResponse *SafeguardMiddleware::handle(const IRequestParser &request, IHandlerContext *ctx)
+IResponse *SafeguardMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
 {
 	IResponse *response = 0;
 	if (_next)
@@ -73,7 +73,7 @@ DefaultErrorPageMiddleware &DefaultErrorPageMiddleware::addDefaultErrorPage(size
 	return *this;
 }
 
-IResponse *DefaultErrorPageMiddleware::handle(const IRequestParser &request, IHandlerContext *ctx)
+IResponse *DefaultErrorPageMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
 {
 	IResponse *response = 0;
 	if (_next)
@@ -96,7 +96,7 @@ MethodFilterMiddleware::~MethodFilterMiddleware()
 {
 }
 
-IResponse *MethodFilterMiddleware::handle(const IRequestParser &request, IHandlerContext *ctx)
+IResponse *MethodFilterMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
 {
 	if (std::find(_allowedMethods.begin(), _allowedMethods.end(), request.getMethod()) == _allowedMethods.end())
 	{
@@ -127,7 +127,7 @@ LoggingMiddleware::~LoggingMiddleware()
 {
 }
 
-IResponse *LoggingMiddleware::handle(const IRequestParser &request, IHandlerContext *ctx)
+IResponse *LoggingMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
 {
 	_logger.logDebug("Request: " + request.getMethod() + " " + request.getTarget());
 	IResponse *response = 0;
@@ -151,6 +151,25 @@ RouteMiddleware::~RouteMiddleware()
 {
 }
 
+IResponse *RouteMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
+{
+	IResponse *response = 0;
+	std::string target = request.getTarget();
+	if (target.find(_inPrefix) == 0)
+	{
+		request.setTarget(combinePaths(_outPrefix, request.getTarget().substr(_inPrefix.length())));
+	}
+	else
+	{
+		return new ConcreteResponse(404, "Not Found: RouteMiddleware");
+	}
+	if (_next)
+	{
+		response = _next->handle(request, ctx);
+	}
+	return response;
+}
+
 DirectoryListingMiddleware::DirectoryListingMiddleware(const std::string &option)
 	: AMiddleware()
 {
@@ -169,30 +188,51 @@ DirectoryListingMiddleware::~DirectoryListingMiddleware()
 {
 }
 
-IResponse *DirectoryListingMiddleware::handle(const IRequestParser &request, IHandlerContext *ctx)
+IResponse *DirectoryListingMiddleware::handle(IRequestParser &request, IHandlerContext *ctx)
 {
 	IResponse *response = 0;
 	if (request.getTarget().find("..") != std::string::npos)
 	{
 		return new ConcreteResponse(403, "Forbidden: possible path traversal");
 	}
-	if (*(request.getTarget().rbegin()) != '/')
+	HandlerContext selfCtx;
+	try
 	{
-		try
+		if (isDirectory(request.getTarget()))
 		{
-			if (!isDirectory(request.getTarget()))
+			if (ctx)
 			{
-				if (_next)
-					return _next->handle(request, ctx);
-				else
-					return new ConcreteResponse(500, "Internal Server Error");
+				static_cast<HandlerContext *>(ctx)->isDir = true;
+				ctx = static_cast<HandlerContext *>(ctx);
+			}
+			else
+			{
+				selfCtx.isDir = true;
+				ctx = &selfCtx;
 			}
 		}
-		catch(const std::exception& e)
+		if (_next)
 		{
-			return new ConcreteResponse(500, "Internal Server Error");
+			response = _next->handle(request, ctx);
 		}
+		else
+			return new ConcreteResponse(500, "Internal Server Error");
+	}
+	catch(const std::exception& e)
+	{
+		return new ConcreteResponse(500, "Internal Server Error");
+	}
 
+	if (response && (response->getStatus() < 400 || response->getStatus() > 499))
+		return response;
+	if (response)
+	{
+		delete response;
+		response = 0;
+	}
+	if (!selfCtx.isDir)
+	{
+		return new ConcreteResponse(404, "Not Found: DirectoryListingMiddleware");
 	}
 	if (_option == AUTO)
 	{
@@ -203,6 +243,10 @@ IResponse *DirectoryListingMiddleware::handle(const IRequestParser &request, IHa
 	{
 		response = new ConcreteResponse(200, "Directory Listing: " + _path);
 		std::string *content = loadFile(_path);
+		if (!content)
+		{
+			return new ConcreteResponse(500, "Internal Server Error");
+		}
 		response->setBody(*content);
 		delete content;
 	}

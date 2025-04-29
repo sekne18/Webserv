@@ -6,36 +6,42 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 10:58:55 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 14:32:43 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 18:54:28 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <string>
-#include <sstream>
-#include <map>
-#include <vector>
 #include <algorithm>
+#include <cstring>
+#include <dirent.h>
 #include <fstream>
+#include <map>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <dirent.h>
-#include <cstring>
-#include <stdexcept>
+#include <vector>
 
+#include "Validators.hpp"
 
 template <typename T>
 std::string toString(T val)
 {
-	std::ostringstream oss;
-	oss << val;
-	return (oss.str());
+    std::ostringstream oss;
+    oss << val;
+    return (oss.str());
 }
+
+std::string getPwd(char **envp);
+std::string combinePaths(std::string const path1, std::string const path2);
+bool isCGIMatch(std::string const &path1, std::string const &path2);
 
 std::string *loadFile(std::string const &path);
 bool isDirectory(std::string const &path);
+bool isFile(std::string const &path);
 std::string generateDirectoryListing(std::string const &path);
 const std::string &getGenericStatusMessage(size_t statusCode);
 
@@ -60,7 +66,7 @@ bool isAlphaNum(char c);
 bool isWhitespace(char c);
 
 bool isMatchInterface(std::string const &ip1, size_t port1,
-						 std::string const &ip2, size_t port2);
+                      std::string const &ip2, size_t port2);
 
 bool contains(std::vector<std::string> const &vec, std::string const &str);
 

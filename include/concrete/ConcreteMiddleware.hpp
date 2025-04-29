@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 14:45:06 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 16:05:24 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 15:09:11 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include "AMiddleware.hpp"
 #include "ILogger.hpp"
 #include "ConcreteResponses.hpp"
+#include "RequestParser.hpp"
+#include "HandlerContext.hpp"
 
 class LimitSizeMiddleware : public AMiddleware
 {
@@ -28,7 +30,7 @@ public:
 	LimitSizeMiddleware(size_t maxSize);
 	~LimitSizeMiddleware();
 
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 private:
 	size_t _maxSize;
 };
@@ -39,7 +41,7 @@ public:
 	SafeguardMiddleware();
 	~SafeguardMiddleware();
 
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 };
 
 class DefaultErrorPageMiddleware : public AMiddleware
@@ -49,7 +51,7 @@ public:
 	~DefaultErrorPageMiddleware();
 
 	DefaultErrorPageMiddleware &addDefaultErrorPage(size_t statusCode, const std::string *errorPage);
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 private:
 	std::map<size_t, const std::string *> _defaultErrorPages;
 };
@@ -60,7 +62,7 @@ public:
 	MethodFilterMiddleware(const std::vector<std::string> &allowedMethods, size_t statusCode, const std::string &redirect = "");
 	~MethodFilterMiddleware();
 
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 private:
 	std::vector<std::string> _allowedMethods;
 	size_t _statusCode;
@@ -73,7 +75,7 @@ public:
 	LoggingMiddleware(const ILogger &logger);
 	~LoggingMiddleware();
 
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 private:
 	const ILogger &_logger;
 };
@@ -84,7 +86,7 @@ public:
 	RouteMiddleware(const std::string &inPrefix, const std::string &outPrefix);
 	~RouteMiddleware();
 
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 private:
 	std::string _inPrefix;
 	std::string _outPrefix;
@@ -96,7 +98,7 @@ public:
 	DirectoryListingMiddleware(const std::string &option);
 	~DirectoryListingMiddleware();
 
-	IResponse *handle(const IRequestParser &request, IHandlerContext *ctx); // override
+	IResponse *handle(IRequestParser &request, IHandlerContext *ctx); // override
 private:
 	enum Option
 	{

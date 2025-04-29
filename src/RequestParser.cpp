@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:38:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/24 15:42:00 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 09:24:51 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,47 @@ RequestParser::RequestParser(const ILogger &logger)
 
 RequestParser::~RequestParser()
 {
+}
+
+RequestParser::RequestParser(const RequestParser &other)
+    : _logger(other._logger),
+      _state(other._state),
+      _errMsg(other._errMsg),
+      _errCode(other._errCode),
+      _buffer(other._buffer),
+      _method(other._method),
+      _host(other._host),
+      _target(other._target),
+      _version(other._version),
+      _headers(other._headers),
+      _body(other._body),
+      _isComplete(other._isComplete),
+      _isChunked(other._isChunked),
+      _noBody(other._noBody),
+      _contentLength(other._contentLength)
+{
+}
+
+RequestParser &RequestParser::operator=(const RequestParser &other)
+{
+    if (this != &other)
+    {
+        _state = other._state;
+        _errMsg = other._errMsg;
+        _errCode = other._errCode;
+        _buffer = other._buffer;
+        _method = other._method;
+        _host = other._host;
+        _target = other._target;
+        _version = other._version;
+        _headers = other._headers;
+        _body = other._body;
+        _isComplete = other._isComplete;
+        _isChunked = other._isChunked;
+        _noBody = other._noBody;
+        _contentLength = other._contentLength;
+    }
+    return *this;
 }
 
 void RequestParser::setErrorState(const std::string &errMsg, size_t errCode)
@@ -173,6 +214,11 @@ const std::string &RequestParser::getMethod() const
 const std::string &RequestParser::getTarget() const
 {
     return _target;
+}
+
+void RequestParser::setTarget(const std::string &target)
+{
+    _target = target;
 }
 
 const std::string &RequestParser::getVersion() const

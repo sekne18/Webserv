@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 13:19:35 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 14:28:09 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 15:45:29 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ Dispatcher::~Dispatcher()
     _virtualHosts.clear();
 }
 
-IResponse *Dispatcher::dispatch(const IRequestParser *request, IRequestContext &ctx)
+IResponse *Dispatcher::dispatch(IRequestParser *request, IRequestContext &ctx)
 {
     std::vector<std::vector<virtualHost>::reverse_iterator> matchingHosts;
     for (std::vector<virtualHost>::reverse_iterator it = _virtualHosts.rbegin(); it != _virtualHosts.rend(); ++it)
@@ -64,9 +64,33 @@ IResponse *Dispatcher::dispatch(const IRequestParser *request, IRequestContext &
         }
     }
     if (match)
-        return match->routes.begin()->second->handle(*request, 0);
+    {
+        size_t longestMatch = 0;
+        IRequestHandler *handler = 0;
+        for (std::map<std::string, IRequestHandler *>::iterator it = match->routes.begin(); it != match->routes.end(); ++it)
+        {
+            if (isCGIMatch(it->first, request->getTarget()))
+            {
+                handler = it->second;
+                break;
+            }
+            if (request->getTarget().find(it->first) == 0) //extension check for cgi
+            {
+                if (it->first.size() > longestMatch)
+                {
+                    longestMatch = it->first.size();
+                    handler = it->second;
+                }
+            }
+        }
+        if (!handler)
+            return match->routes.begin()->second->handle(*request, 0);
+        else
+            return handler->handle(*request, 0);
+    }
     return new ConcreteResponse(404, "Not Found");
 }
+
 
 void Dispatcher::loadFromConfig(const ServerConfig &config)
 {
@@ -79,6 +103,7 @@ void Dispatcher::loadFromConfig(const ServerConfig &config)
         virtualHost vh;
         vh.ip = it->ip;
         vh.port = it->port;
+        vh.max_size = it->max_size;
         vh.serverNames = it->serverNames; // -> make a structure with server names within the virtual host
         for (std::map<size_t, std::string *>::const_iterator it2 = it->errorPages.begin(); it2 != it->errorPages.end(); ++it2)
         {
@@ -88,7 +113,6 @@ void Dispatcher::loadFromConfig(const ServerConfig &config)
         MiddlewareChainBuilder builder;
         for (std::vector<Route>::const_iterator it2 = it->routes.begin(); it2 != it->routes.end(); ++it2)
         {
-            //TODO: do not do this for empty routes so devs can add their own routes programatically
             DefaultErrorPageMiddleware *errorMid = new DefaultErrorPageMiddleware();
             for (std::map<size_t, std::string *>::const_iterator it3 = vh.errorPages.begin(); it3 != vh.errorPages.end(); ++it3)
             {
@@ -99,29 +123,64 @@ void Dispatcher::loadFromConfig(const ServerConfig &config)
                 .use(new SafeguardMiddleware())
                 .use(errorMid)
                 .use(new LimitSizeMiddleware(it->max_size))
-                .use(new MethodFilterMiddleware(it2->allowedMethods, it2->disallowedReturnCode, it2->disallowedPath))
-                .use(new DirectoryListingMiddleware(it2->index));
+                .use(new MethodFilterMiddleware(it2->allowedMethods, it2->disallowedReturnCode, it2->disallowedPath));
             if (it2->isCgi)
-                builder.handle(new CgiHandler(it2->locationPath, it2->root));
-            else if (it2->isReturn)
-                builder.handle(new RedirectHandler(it2->returnCode, it2->returnPath));
+            {
+                std::string prefix = it2->locationPath;
+                std::string extension = prefix.substr(prefix.find_last_of('.'));
+                prefix = prefix.substr(0, prefix.find_last_of('.'));
+                if (prefix.find('*') != std::string::npos)
+                {
+                    prefix = prefix.substr(0, prefix.find('*'));
+                }
+                builder.use(new RouteMiddleware(prefix, it2->root))
+                .use(new DirectoryListingMiddleware(it2->index));
+                builder.handle(new CgiHandler(extension));
+            }
             else
-                builder.handle(new StaticFileHandler(it2->locationPath, it2->root));
+            {
+                builder.use(new RouteMiddleware(it2->locationPath, it2->root))
+                .use(new DirectoryListingMiddleware(it2->index));
+            }
+
+            if (it2->isReturn)
+                builder.handle(new RedirectHandler(it2->returnCode, it2->returnPath));
+            else if (!it2->isCgi)
+                builder.handle(new StaticFileHandler());
             vh.routes[it2->locationPath] = builder.build();
             builder.clear();
         }
         _virtualHosts.push_back(vh);
     }
-    // -> construct the middleware chain for each route
-    //   -> loggingMiddleware: for logging the request and response (calls next handler first and logs the request and response)
-    //   -> safeguardMiddleware: for handling the errors (calls next handler first and sets the response to 500 if there is no response)
-    //   -> defaultErrorPageMiddleware: for setting the body on errorResponses (calls next handler first and sets the body on response)
-    //   -> limitSizeMiddleware: for limiting the size of the request (only calls next handler if the size is ok)
-    //   -> maxSizeMiddleware: for limiting the size of the request (only calls next handler if the size is ok)
-    //   -> methodFilterMiddleware: for filtering the methods (only calls next handler if the method is ok)
-    //   -> directoryListingMiddleware: for handling the directory listing (only calls next handler if the request is ok)
-    //      -> cgiHandler: for handling the cgi
-    //      -> staticFileHandler: for handling the static files
-    //      -> redirectHandler: for handling the redirect
-
 }
+
+void Dispatcher::addRoute(const std::string &ip, size_t port, const std::string &path, IRequestHandler *handler)
+{
+    MiddlewareChainBuilder builder;
+    DefaultErrorPageMiddleware *errorMid = new DefaultErrorPageMiddleware();
+    virtualHost *vh;
+    for (std::vector<virtualHost>::iterator it = _virtualHosts.begin(); it != _virtualHosts.end(); ++it)
+    {
+        if (it->ip == ip && it->port == port)
+        {
+            vh = &*it;
+            break;
+        }
+    }
+    if (vh->ip.empty())
+        throw std::runtime_error("No matching virtual host found for: " + ip + ":" + toString(port));
+    if (vh->routes.find(path) != vh->routes.end())
+        throw std::runtime_error("Route already exists: " + path);
+    for (std::map<size_t, std::string *>::const_iterator it3 = vh->errorPages.begin(); it3 != vh->errorPages.end(); ++it3)
+    {
+        errorMid->addDefaultErrorPage(it3->first, it3->second);
+    }
+    builder
+        .use(new LoggingMiddleware(_logger))
+        .use(new SafeguardMiddleware())
+        .use(errorMid)
+        .use(new LimitSizeMiddleware(vh->max_size))
+        .handle(handler);
+    vh->routes[path] = builder.build();
+}
+    

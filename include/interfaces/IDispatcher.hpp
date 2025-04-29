@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:23:52 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/17 13:21:27 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 10:01:16 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,8 @@ class IDispatcher
 public:
 	virtual ~IDispatcher() {};
 
-	virtual IResponse *dispatch(const IRequestParser *request, IRequestContext &ctx) = 0;
-	// virtual void addRoute(const std::string &path, IRequestHandler *handler) = 0;
-	// virtual void registerHandler(const std::string &method, const std::string &path, IRequestHandler *handler) = 0; // TODO: WIP
+	virtual IResponse *dispatch(IRequestParser *request, IRequestContext &ctx) = 0;
+	virtual void addRoute(const std::string &ip, size_t port, const std::string &path, IRequestHandler *handler) = 0;
 };
 
 #endif // IDISPATCHER_HPP

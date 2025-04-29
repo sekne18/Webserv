@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:34:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 10:59:49 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 09:24:44 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class RequestParser : public IRequestParser
 {
   public:
     RequestParser(const ILogger &logger);
+    RequestParser(const RequestParser &other);
+    RequestParser &operator=(const RequestParser &other);
     ~RequestParser();
 
     void parse(const std::string &data);                          // override;
@@ -35,6 +37,7 @@ class RequestParser : public IRequestParser
 	size_t getErrorCode() const;									// override;
     const std::string &getMethod() const;                         // override;
     const std::string &getTarget() const;                           // override;
+    void setTarget(const std::string &target);                    // override;
     const std::string &getVersion() const;                        // override;
     const std::string &getHost() const;                           // override;
     const std::multimap<std::string, std::string> &getHeaders() const; // override;

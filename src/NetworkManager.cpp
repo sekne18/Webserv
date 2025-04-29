@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 16:01:21 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 11:20:07 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 15:01:16 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,9 +144,10 @@ void NetworkManager::unregisterSocket(int fd)
             break;
         }
     }
-    if (_connections.find(fd) != _connections.end())
+    std::map<int, IConnection *>::iterator it = _connections.find(fd);
+    if (it != _connections.end())
     {
-        delete _connections[fd];
+        delete it->second;
         _connections.erase(fd);
         _logger.logInfo("Socket " + toString(fd) + " unregistered");
     }

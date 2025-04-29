@@ -1,21 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Router.cpp                                         :+:      :+:    :+:   */
+/*   HandlerContext.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 16:31:19 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/10 16:00:09 by fmol             ###   ########.fr       */
+/*   Created: 2025/04/29 11:03:07 by fmol              #+#    #+#             */
+/*   Updated: 2025/04/29 11:03:17 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Router.hpp"
+#include "HandlerContext.hpp"
 
-Router::Router(const std::vector<ServerData> &servers) : _servers(servers)
+HandlerContext::HandlerContext()
+	: IHandlerContext(), isDir(false)
 {
 }
 
-Router::~Router()
+HandlerContext::~HandlerContext()
 {
 }

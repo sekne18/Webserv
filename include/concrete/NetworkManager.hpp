@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:51:03 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 08:32:32 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/29 18:31:58 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,9 @@ class NetworkManager : public INetworkManager
     NetworkManager(const ILogger &logger, size_t maxEvents = 10);
     ~NetworkManager();
 
-    void run();                                        // override;
-    void stop();                                       // override;
-    void setDispatcher(IDispatcher *dispatcher);       // override;
+    void run();                                  // override;
+    void stop();                                 // override;
+    void setDispatcher(IDispatcher *dispatcher); // override;
     /**
      * * @brief start listening on the given ip and port
      * * @param ip the ip address to listen on
@@ -59,7 +59,7 @@ class NetworkManager : public INetworkManager
       public:
         SocketAlreadyInUseException(const std::string &msg);
         virtual const char *what() const throw();
-		virtual ~SocketAlreadyInUseException() throw() {};
+        virtual ~SocketAlreadyInUseException() throw() {};
 
       private:
         std::string _msg;
