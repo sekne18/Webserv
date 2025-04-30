@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:38:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/30 15:39:40 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 16:23:46 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,7 +210,7 @@ size_t RequestParser::getErrorCode() const
 
 bool RequestParser::isBodyExpected() const
 {
-    return ((_isChunked || _contentLength > 0) && !_noBody);
+    return (_isChunked || (_contentLength > 0 && !_noBody));
 }
 
 
@@ -435,7 +435,6 @@ void RequestParser::parseHeaders(const std::string &line)
     std::string key = line.substr(0, pos);
     std::string value = line.substr(pos + 1);
     if (key.empty() || *(--(key.end())) == ' ' || *(key.begin()) == ' ')
-    
     {
         setErrorState("Invalid header line", 400);
         return;
