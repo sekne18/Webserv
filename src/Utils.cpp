@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 11:32:18 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 20:05:15 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 08:44:16 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,19 @@ size_t toSizeT(std::string const &str)
     if (iss.fail() || !iss.eof())
         throw std::runtime_error("Invalid size_t value: " + str);
     return (val);
+}
+
+bool hexToDec(std::string const &hex, size_t &dec)
+{
+    if (hex.empty() || hex[0] == '-')
+    {
+        return false;
+    }
+    std::istringstream iss(hex);
+    iss >> std::hex >> dec;
+    if (iss.fail() || !iss.eof())
+        return false;
+    return true;
 }
 
 bool toSizeTNoThrow(std::string const &str, size_t &val)
@@ -219,6 +232,15 @@ bool isFile(std::string const &path)
     }
     return false;
 }
+
+bool fileExists(std::string const &path)
+{
+    if (access(path.c_str(), F_OK) == 0)
+        return true;
+    //int err = errno;
+    return false;
+}
+    
 
 std::string generateDirectoryListing(std::string const &path)
 {

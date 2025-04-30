@@ -6,15 +6,15 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 15:37:09 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 07:55:15 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 13:26:07 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server(const ILogger &logger)
-    : _networkManager(new NetworkManager(logger)),
-      _sessionManager(0), // new SessionManager(logger)),
+    : _sessionManager(new SessionManager(logger)),
+      _networkManager(new NetworkManager(logger, *_sessionManager)),
       _dispatcher(0),
       _logger(logger)
 {

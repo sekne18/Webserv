@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:51:03 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 18:31:58 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 13:26:38 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,12 @@
 #include "Utils.hpp"
 #include "assert.hpp"
 #include "structs.hpp"
+#include "ISessionManager.hpp"
 
 class NetworkManager : public INetworkManager
 {
   public:
-    NetworkManager(const ILogger &logger, size_t maxEvents = 10);
+    NetworkManager(const ILogger &logger, ISessionManager &sessionManager, size_t maxEvents = 32);
     ~NetworkManager();
 
     void run();                                  // override;
@@ -77,7 +78,8 @@ class NetworkManager : public INetworkManager
     IDispatcher *_dispatcher;
     std::vector<t_socketInfo> _listeners;
     std::map<int, IConnection *> _connections;
-    const ILogger &_logger;
+    const ILogger &_logger; // not owned
+    ISessionManager &_sessionManager; // not owned
 };
 
 #endif // NETWORKMANAGER_HPP

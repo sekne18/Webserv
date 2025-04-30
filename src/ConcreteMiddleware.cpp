@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 12:59:25 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 15:08:07 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:57:49 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ IResponse *DirectoryListingMiddleware::handle(IRequestParser &request, IHandlerC
 	{
 		return new ConcreteResponse(403, "Forbidden: possible path traversal");
 	}
-	HandlerContext selfCtx;
+	HandlerContext selfCtx(0);
 	try
 	{
 		if (isDirectory(request.getTarget()))

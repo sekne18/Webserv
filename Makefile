@@ -12,7 +12,8 @@ FILES := main.cpp Lexer.cpp Utils.cpp Parser.cpp ServerConfig.cpp Validators.cpp
 			RequestParser.cpp Dispatcher.cpp NetworkManager.cpp StreamLogger.cpp structs.cpp assert.cpp \
 			Connection.cpp ConcreteResponses.cpp ILogger.cpp MessageException.cpp ResponseWriter.cpp \
 			ConcreteMiddleware.cpp ConcreteRequestHandlers.cpp MiddlewareChainBuilder.cpp AMiddleware.cpp \
-			RequestContext.cpp HandlerContext.cpp
+			RequestContext.cpp HandlerContext.cpp \
+			SessionManager.cpp Session.cpp SessionIdGenerator.cpp SessionShowcase.cpp
 SRCS := $(addprefix $(SRC_DIR)/, $(FILES))
 OBJS := $(addprefix $(OBJ_DIR)/, $(FILES:.cpp=.o))
 NAME := webserv

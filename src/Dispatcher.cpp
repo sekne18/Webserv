@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 13:19:35 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 15:45:29 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 15:14:58 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,10 +83,11 @@ IResponse *Dispatcher::dispatch(IRequestParser *request, IRequestContext &ctx)
                 }
             }
         }
+        HandlerContext hCtx(ctx.getSession());
         if (!handler)
-            return match->routes.begin()->second->handle(*request, 0);
+            return match->routes.begin()->second->handle(*request, &hCtx);
         else
-            return handler->handle(*request, 0);
+            return handler->handle(*request, &hCtx);
     }
     return new ConcreteResponse(404, "Not Found");
 }

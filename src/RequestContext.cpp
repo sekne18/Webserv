@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 16:50:31 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/24 15:26:24 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 13:19:56 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,4 +29,9 @@ const std::string &RequestContext::getIp() const
 size_t RequestContext::getPort() const
 {
 	return _port;
+}
+
+ISession *RequestContext::getSession() const
+{
+	return _session;
 }

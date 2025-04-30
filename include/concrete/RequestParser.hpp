@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:34:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 09:24:44 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:17:21 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 class RequestParser : public IRequestParser
 {
-  public:
+public:
     RequestParser(const ILogger &logger);
     RequestParser(const RequestParser &other);
     RequestParser &operator=(const RequestParser &other);
@@ -42,9 +42,10 @@ class RequestParser : public IRequestParser
     const std::string &getHost() const;                           // override;
     const std::multimap<std::string, std::string> &getHeaders() const; // override;
     const std::string &getBody() const;                           // override;
+    const std::string &getSessionId() const;                      // override;
     void reset();                                                 // override;
     void flushBuffer();                                           // override;
-  private:
+private:
     void parseLine(const std::string &line);
     void parseStartLine(const std::string &line);
     void parseHeaders(const std::string &line);
@@ -61,6 +62,7 @@ class RequestParser : public IRequestParser
         HEADERS,
         BODY,
         CHUNKED,
+        CHUNKED_DATA,
         COMPLETE,
         ERROR
     };
@@ -78,6 +80,9 @@ class RequestParser : public IRequestParser
     bool _isChunked;
     bool _noBody;
     size_t _contentLength;
+    size_t _chunkSize;
+    size_t _tmpRead;
+    std::string _sessionId;
 };
 
 #endif // REQUESTPARSER_HPP

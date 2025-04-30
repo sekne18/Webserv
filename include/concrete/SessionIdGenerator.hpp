@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 16:02:58 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/17 09:29:24 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 15:03:05 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,8 @@ private:
 	bool refreshBuffer();
 
 	const size_t _bufferSize;
-	unsigned char *_buffer;
 	size_t _bufferIndex;
+	unsigned char *_buffer;
 };
 
 #endif // SESSIONIDGENERATOR_HPP

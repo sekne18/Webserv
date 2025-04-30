@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 15:23:32 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/12 15:32:54 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:58:18 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,18 @@
 
 #include <string>
 
-#include "IResponse.hpp"
+#include "ISession.hpp"
 
 class ISessionManager
 {
 public:
 	virtual ~ISessionManager() {};
-
 	
-	virtual void attachSessionCookie(IResponse &response, const std::string &sessionId) = 0;
+	virtual std::string createSession(size_t expirationTime = 3600) = 0;
+	virtual ISession *getSession(const std::string &sessionId) = 0;
+	virtual void deleteSession(const std::string &sessionId) = 0;
 	virtual void cleanExpiredSessions() = 0;
+	virtual bool isSessionExpired(const std::string &sessionId) = 0;
 };
 
 #endif // ISESSIONMANAGER_HPP

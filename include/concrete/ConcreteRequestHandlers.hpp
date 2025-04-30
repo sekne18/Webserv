@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 14:42:27 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 19:30:27 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:37:26 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,11 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 
 #include "ConcreteResponses.hpp"
 #include "IRequestHandler.hpp"

@@ -6,14 +6,14 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/10 16:01:21 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 15:01:16 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:55:51 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "NetworkManager.hpp"
 
-NetworkManager::NetworkManager(const ILogger &logger, size_t maxEvents)
-    : _shouldStop(false), _maxEvents(maxEvents), _epFd(-1), _dispatcher(0), _logger(logger)
+NetworkManager::NetworkManager(const ILogger &logger, ISessionManager &sessionManager, size_t maxEvents)
+    : _shouldStop(false), _maxEvents(maxEvents), _epFd(-1), _dispatcher(0), _logger(logger), _sessionManager(sessionManager)
 {
     _epFd = epoll_create1(0);
     if (_epFd == -1)
@@ -220,7 +220,7 @@ void NetworkManager::run()
                             info.ip = inet_ntoa(addr.sin_addr);
                             info.port = ntohs(addr.sin_port);
                             info.listenPort = std::find(_listeners.begin(), _listeners.end(), events[i].data.fd)->listenPort;
-                            _connections[newFd] = new Connection(_epFd, info, *_dispatcher, _logger);
+                            _connections[newFd] = new Connection(_epFd, info, *_dispatcher, _logger, _sessionManager);
                         }
                         catch (std::bad_alloc &e)
                         {

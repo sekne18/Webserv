@@ -6,16 +6,16 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:30:32 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 14:52:55 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:23:30 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Connection.hpp"
 
-Connection::Connection(int epFd, t_socketInfo info, IDispatcher &dispatcher, const ILogger &logger)
+Connection::Connection(int epFd, t_socketInfo info, IDispatcher &dispatcher, const ILogger &logger, ISessionManager &sessionManager)
     : _epFd(epFd), _socket(info.fd), _ip(info.ip), _listenPort(info.listenPort), _port(info.port), _shouldClose(false),
       _RequestParser(new RequestParser(logger)), _responseWriter(new ResponseWriter()),
-      _dispatcher(dispatcher), _logger(logger)
+      _dispatcher(dispatcher), _logger(logger), _sessionManager(sessionManager)
 {
 }
 
@@ -93,7 +93,10 @@ void Connection::onReadable()
             }
             if (_RequestParser->isComplete())
             {
-                RequestContext ctx(_listenPort, _ip, 0);
+                std::string _sessionId = _RequestParser->getSessionId();
+                if (_sessionManager.isSessionExpired(_sessionId))
+                    _sessionId = _sessionManager.createSession();
+                RequestContext ctx(_listenPort, _ip, _sessionManager.getSession(_sessionId));
                 if (!_RequestParser->isErroneous())
                 {
                     response = _dispatcher.dispatch(_RequestParser, ctx);

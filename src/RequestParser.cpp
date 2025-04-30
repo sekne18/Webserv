@@ -6,21 +6,15 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 16:38:29 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 09:24:51 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 15:39:40 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestParser.hpp"
 
-RequestParser::RequestParser(const ILogger &logger)
-    : _logger(logger),
-      _state(START_1),
-      _errCode(0),
-      _isComplete(false),
-      _isChunked(false),
-      _noBody(true),
-      _contentLength(0)
+RequestParser::RequestParser(const ILogger &logger) : _logger(logger)
 {
+    reset();
 }
 
 RequestParser::~RequestParser()
@@ -42,7 +36,9 @@ RequestParser::RequestParser(const RequestParser &other)
       _isComplete(other._isComplete),
       _isChunked(other._isChunked),
       _noBody(other._noBody),
-      _contentLength(other._contentLength)
+      _contentLength(other._contentLength),
+      _chunkSize(other._chunkSize),
+      _tmpRead(other._tmpRead)
 {
 }
 
@@ -90,6 +86,20 @@ void RequestParser::parse(const std::string &data)
     {
         if (_state == COMPLETE || _state == ERROR)
             return;
+        if (_state == CHUNKED_DATA && _tmpRead < _chunkSize && !_buffer.empty())
+        {
+            std::string line = _buffer.substr(0, _chunkSize - _tmpRead);
+            _buffer.erase(0, _chunkSize - _tmpRead);
+            parseLine(line);
+            continue;
+        }
+        else if (_state == BODY && _tmpRead < _contentLength && !_buffer.empty())
+        {
+            std::string line = _buffer.substr(0, _contentLength - _tmpRead);
+            _buffer.erase(0, line.length());
+            parseLine(line);
+            continue;
+        }
         size_t pos = _buffer.find("\r\n");
         if (pos == std::string::npos)
             return;
@@ -167,6 +177,9 @@ void RequestParser::parseLine(const std::string &line)
         case CHUNKED:
             parseChunkedBody(line);
             break;
+        case CHUNKED_DATA:
+            parseChunkedBody(line);
+            break;
         case ERROR:
             // already in error state, ignore the rest
             break;
@@ -236,6 +249,11 @@ const std::string &RequestParser::getBody() const
     return _body;
 }
 
+const std::string &RequestParser::getSessionId() const
+{
+    return _sessionId;
+}
+
 void RequestParser::flushBuffer()
 {
     _buffer.clear();
@@ -251,11 +269,16 @@ void RequestParser::reset()
     _body.clear();
     _buffer.clear();
     _contentLength = 0;
+    _chunkSize = 0;
+    _tmpRead = 0;
     flushBuffer();
     _state = START_1;
     _isComplete = false;
     _isChunked = false;
     _noBody = true;
+    _errMsg.clear();
+    _errCode = 0;
+    _sessionId.clear();
 }
 
 void RequestParser::parseStartLine(const std::string &line)
@@ -305,13 +328,76 @@ void RequestParser::parseStartLine(const std::string &line)
 
 void RequestParser::parseChunkedBody(const std::string &line)
 {
-    (void)line;
+    if (_state == CHUNKED)
+    {
+        _chunkSize = 0;
+        if (line.empty())
+        {
+            setErrorState("Empty chunk size", 400);
+            return;
+        }
+        if (!hexToDec(line, _chunkSize))
+        {
+            setErrorState("Invalid chunk size", 400);
+            return;
+        }
+        _state = CHUNKED_DATA;
+    }
+    if (_state == CHUNKED_DATA)
+    {
+        if (_chunkSize == 0)
+        {
+            if (!line.empty())
+            {
+                setErrorState("Invalid chunk data", 400);
+                return;
+            }
+            _isComplete = true;
+            _state = COMPLETE;
+            _logger.logDebug("state => COMPLETE");
+            return;
+        }
+        else if (_chunkSize == _tmpRead)
+        {
+            if (!line.empty())
+            {
+                setErrorState("Invalid chunk data", 400);
+                return;
+            }
+            _tmpRead = 0;
+            _state = CHUNKED;
+            _logger.logDebug("state => CHUNKED");
+        }
+        if (_tmpRead + line.length() > _chunkSize)
+        {
+            setErrorState("Chunk size exceeded", 400);
+            return;
+        }
+        _body += line;
+        _tmpRead += line.length();
+    }
 }
 
 void RequestParser::parseBody(const std::string &line)
 {
-    (void)line;
-
+    if (_body.length() == _contentLength)
+    {
+        if (!line.empty())
+        {
+            setErrorState("Invalid body data", 400);
+            return;
+        }
+        _isComplete = true;
+        _state = COMPLETE;
+        _logger.logDebug("state => COMPLETE");
+    }
+    if (_body.length() + line.length() > _contentLength)
+    {
+        setErrorState("Content-Length exceeded", 400);
+        return;
+    }
+    _body += line;
+    _tmpRead += line.length();
 };
 
 void RequestParser::parseHeaders(const std::string &line)
@@ -327,8 +413,16 @@ void RequestParser::parseHeaders(const std::string &line)
         }
         else
         {
-            _state = BODY;
-            _logger.logDebug("state => BODY");
+            if (_isChunked)
+            {
+                _state = CHUNKED;
+                _logger.logDebug("state => CHUNKED");
+            }
+            else
+            {
+                _state = BODY;
+                _logger.logDebug("state => BODY");
+            }
             return;
         }
     }
@@ -397,6 +491,21 @@ void RequestParser::parseHeaders(const std::string &line)
         {
             setErrorState("Host already set", 400);
             return;
+        }
+    }
+    else if (key == "cookie")
+    {
+        size_t pos = value.find("session_id=");
+        if (pos != std::string::npos)
+        {
+            size_t end = value.find(';', pos);
+            if (end == std::string::npos)
+                end = value.length();
+            _sessionId = value.substr(pos + 11, end - pos - 11);
+        }
+        else
+        {
+            _sessionId.clear();
         }
     }
     else

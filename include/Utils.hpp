@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/10 10:58:55 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 18:54:28 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 08:41:45 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
+#include <unistd.h>
 
 #include "Validators.hpp"
 
@@ -38,10 +39,12 @@ std::string toString(T val)
 std::string getPwd(char **envp);
 std::string combinePaths(std::string const path1, std::string const path2);
 bool isCGIMatch(std::string const &path1, std::string const &path2);
+bool hexToDec(std::string const &hex, size_t &dec);
 
 std::string *loadFile(std::string const &path);
 bool isDirectory(std::string const &path);
 bool isFile(std::string const &path);
+bool fileExists(std::string const &path);
 std::string generateDirectoryListing(std::string const &path);
 const std::string &getGenericStatusMessage(size_t statusCode);
 

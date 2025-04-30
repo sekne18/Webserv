@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 13:07:56 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 15:10:00 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 15:06:44 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include "Server.hpp"
 #include "ServerConfig.hpp"
 #include "StreamLogger.hpp"
+
+#include "SessionShowcase.hpp"
 
 void printUsage()
 {
@@ -114,6 +116,7 @@ int main(int argc, char **argv)
             for (std::vector<std::pair<std::string, size_t> >::const_iterator it = socketInfo.begin(); it != socketInfo.end(); ++it)
                 g_server->listenOn(it->first, it->second);
         }
+        setUpRoutes(&dispatcher);
         g_server->setDispatcher(&dispatcher);
         g_server->run();
     }

@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 16:49:31 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/24 15:38:20 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 13:19:46 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ public:
 
 	const std::string &getIp() const; // override;
 	size_t getPort() const; // override;
+	ISession *getSession() const; // override;
 private:
 	std::string _ip;
 	size_t _port;

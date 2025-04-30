@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/16 16:05:56 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/17 09:28:42 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 15:06:03 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,10 @@
 SessionIdGenerator::SessionIdGenerator(size_t bufferSize) : _bufferSize(bufferSize), _bufferIndex(_bufferSize + 1),
 															_buffer(new unsigned char[bufferSize])
 {
-	if (_buffer == nullptr)
+	//TODO: check if bufferSize is within reasonable limits
+	if (bufferSize > 1024 * 1024)
+		throw std::runtime_error("Buffer size too large");
+	if (_buffer == 0)
 		throw std::runtime_error("Failed to allocate memory for buffer");
 	if (!refreshBuffer())
 		throw std::runtime_error("Failed to read from /dev/urandom");
@@ -32,7 +35,7 @@ bool SessionIdGenerator::refreshBuffer()
 	if (!urandom)
 		return false;
 	urandom.read(reinterpret_cast<char *>(_buffer), _bufferSize);
-	return (urandom.gcount() == _bufferSize);
+	return (urandom.gcount() == static_cast<std::streamsize>(_bufferSize));
 }
 
 bool SessionIdGenerator::getRandomBytes(unsigned char *dest, size_t size)

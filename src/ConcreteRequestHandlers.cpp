@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/24 14:52:16 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/29 20:07:46 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 12:05:27 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,12 +54,13 @@ IResponse *CgiHandler::execute(IRequestParser &request, IHandlerContext *ctx)
     if (request.getMethod() == "POST")
     {
         std::multimap<std::string, std::string> headers = request.getHeaders();
-        std::multimap<std::string, std::string>::iterator it = headers.find("Content-Type");
+        std::multimap<std::string, std::string>::iterator it = headers.find("content-type");
         if (it != headers.end())
         {
             envStrings.push_back("CONTENT_TYPE=" + it->second);
         }
-        return new ConcreteResponse(400, "Bad Request");
+        else
+            return new ConcreteResponse(400, "Bad Request");
     }
     else if (request.getMethod() == "GET")
     {
@@ -118,6 +119,7 @@ IResponse *CgiHandler::execute(IRequestParser &request, IHandlerContext *ctx)
     }
     else
     {
+        delete[] envp;
         close(in[0]);
         close(out[1]);
         write(in[1], request.getBody().c_str(), request.getBody().size());
@@ -155,7 +157,7 @@ IResponse *CgiHandler::handle(IRequestParser &request, IHandlerContext *ctx)
 {
     (void)request;
     (void)ctx;
-    if (request.getMethod() != "GET" || request.getMethod() != "POST")
+    if (request.getMethod() != "GET" && request.getMethod() != "POST")
         return new ConcreteResponse(405, "Method Not Allowed");
     if (request.getTarget().find(_extension) == std::string::npos)
         return new ConcreteResponse(415, "Unsupported Media Type");
@@ -241,34 +243,58 @@ IResponse *StaticFileHandler::handlePOST(IRequestParser &request, IHandlerContex
     (void)ctx;
     if (isDirectory(request.getTarget()))
         return new ConcreteResponse(409, "Conflict");
-    std::ofstream file(request.getTarget().c_str(), std::ios::out | std::ios::trunc);
-    if (!file.is_open())
+    int flags = O_WRONLY | O_TRUNC;
+    if (!fileExists(request.getTarget()))
+        flags |= O_CREAT;
+    int fd = open(request.getTarget().c_str(), flags, 0644);
+    IResponse *response = 0;
+    if (fd == -1)
     {
         int error = errno;
-        if (file.bad())
+        if (error == ENOENT)
         {
-            return new ConcreteResponse(500, "Internal Server Error");
+            response = new ConcreteResponse(404, "Not Found");
         }
-        if (file.fail())
+        else if (error == EACCES)
         {
+            response = new ConcreteResponse(403, "Forbidden");
+        }
+        response = new ConcreteResponse(500, "Internal Server Error");
+    }
+    else
+    {
+        ssize_t bytesWritten = write(fd, request.getBody().c_str(), request.getBody().size());
+        if (bytesWritten == -1)
+        {
+            int error = errno;
             if (error == ENOENT)
             {
-                return new ConcreteResponse(404, "Not Found");
+                response = new ConcreteResponse(404, "Not Found");
             }
             else if (error == EACCES)
             {
-                return new ConcreteResponse(403, "Forbidden");
+                response = new ConcreteResponse(403, "Forbidden");
+            }
+            response = new ConcreteResponse(500, "Internal Server Error");
+        }
+        else
+        {
+            if (flags & O_CREAT)
+            {
+                response = new ConcreteResponse(201, "Created");
+                response->addHeader("Location", request.getTarget());
+                response->addHeader("Content-Type", "text/html");
+            }
+            else
+            {
+                response = new ConcreteResponse(200, "OK");
+                response->setBody(request.getBody());
+                response->addHeader("Content-Type", "text/html");
             }
         }
-        return new ConcreteResponse(400, "Bad request");
     }
-    file << request.getBody();
-    if (file.bad())
-    {
-        return new ConcreteResponse(500, "Internal Server Error");
-    }
-    file.close();
-    return new ConcreteResponse(200, "OK");
+    close(fd);
+    return response;
 }
 
 IResponse *StaticFileHandler::handleDELETE(IRequestParser &request, IHandlerContext *ctx)

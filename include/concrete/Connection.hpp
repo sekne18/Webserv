@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 14:52:10 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/28 08:27:15 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:22:42 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,12 @@
 #include "Utils.hpp"
 #include "structs.hpp"
 #include "RequestContext.hpp"
+#include "ISessionManager.hpp"
 
 class Connection : public IConnection
 {
   public:
-    Connection(int epFd, t_socketInfo info, IDispatcher &dispatcher, const ILogger &logger);
+    Connection(int epFd, t_socketInfo info, IDispatcher &dispatcher, const ILogger &logger, ISessionManager &sessionManager);
     ~Connection();
 
     void onReadable(); // override;
@@ -58,6 +59,7 @@ class Connection : public IConnection
     std::queue<IResponse *> _responseQueue; // owned
     IDispatcher &_dispatcher;               // not owned
     const ILogger &_logger;                 // not owned
+    ISessionManager &_sessionManager;       // not owned
 };
 
 #endif // CONNECTION_HPP

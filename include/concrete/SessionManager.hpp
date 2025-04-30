@@ -6,7 +6,7 @@
 /*   By: fmol <fmol@student.s19.be>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 15:33:36 by fmol              #+#    #+#             */
-/*   Updated: 2025/04/17 13:12:24 by fmol             ###   ########.fr       */
+/*   Updated: 2025/04/30 14:59:43 by fmol             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,32 @@
 #define SESSIONMANAGER_HPP
 
 #include <map>
+#include <set>
 
 #include "ISessionManager.hpp"
 #include "ILogger.hpp"
-#include "ISession.hpp"
+#include "Session.hpp"
+#include "SessionIdGenerator.hpp"
 
 class SessionManager : public ISessionManager
 {
 public:
-	SessionManager(const ILogger &logger);
+	SessionManager(const ILogger &logger, time_t refreshTime = 3600);
 	~SessionManager();
 
-	void attachSessionCookie(IResponse &response, const std::string &sessionId);
-	void cleanExpiredSessions();
+	std::string createSession(size_t expirationTime = 3600); // override;
+	ISession *getSession(const std::string &sessionId); // override;
+	void deleteSession(const std::string &sessionId); // override;
+	void cleanExpiredSessions(); // override;
+	bool isSessionExpired(const std::string &sessionId); // override;
 
 private:
-	std::map<std::string, ISession *> _sessions; // sessionId -> sessionData
 	const ILogger &_logger;
+	time_t _refreshTime;
+	SessionIdGenerator _sessionIdGenerator;
+	std::set<std::string> _sessionIds;
+	std::map<std::string, ISession *> _sessions; // sessionId -> sessionData
+	std::map<std::string, time_t> _expirationTimes; // sessionId -> expirationTime
 };
 
 #endif // SESSIONMANAGER_HPP
