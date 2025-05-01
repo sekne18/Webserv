@@ -35,7 +35,6 @@ private:
 	ISessionManager *_sessionManager; // owned
 	INetworkManager *_networkManager; // owned
 	IDispatcher *_dispatcher;		  // not owned
-	const ILogger &_logger;			  // not owned
 };
 
 #endif // SERVER_HPP

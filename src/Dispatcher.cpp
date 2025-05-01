@@ -159,7 +159,7 @@ void Dispatcher::addRoute(const std::string &ip, size_t port, const std::string 
 {
     MiddlewareChainBuilder builder;
     DefaultErrorPageMiddleware *errorMid = new DefaultErrorPageMiddleware();
-    virtualHost *vh;
+    virtualHost *vh = NULL;
     for (std::vector<virtualHost>::iterator it = _virtualHosts.begin(); it != _virtualHosts.end(); ++it)
     {
         if (it->ip == ip && it->port == port)

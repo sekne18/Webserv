@@ -17,6 +17,7 @@ Connection::Connection(int epFd, t_socketInfo info, IDispatcher &dispatcher, con
       _RequestParser(new RequestParser(logger)), _responseWriter(new ResponseWriter()),
       _dispatcher(dispatcher), _logger(logger), _sessionManager(sessionManager)
 {
+    (void)_port;
 }
 
 void Connection::deleteResponseQueue()

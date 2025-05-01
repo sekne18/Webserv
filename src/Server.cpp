@@ -15,8 +15,7 @@
 Server::Server(const ILogger &logger)
     : _sessionManager(new SessionManager(logger)),
       _networkManager(new NetworkManager(logger, *_sessionManager)),
-      _dispatcher(0),
-      _logger(logger)
+      _dispatcher(0)
 {
 }
 

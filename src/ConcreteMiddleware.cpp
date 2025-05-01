@@ -196,6 +196,8 @@ IResponse *DirectoryListingMiddleware::handle(IRequestParser &request, IHandlerC
 		return new ConcreteResponse(403, "Forbidden: possible path traversal");
 	}
 	HandlerContext selfCtx(0);
+	if (!ctx)
+		ctx = &selfCtx;
 	try
 	{
 		if (isDirectory(request.getTarget()))
@@ -208,7 +210,6 @@ IResponse *DirectoryListingMiddleware::handle(IRequestParser &request, IHandlerC
 			else
 			{
 				selfCtx.isDir = true;
-				ctx = &selfCtx;
 			}
 		}
 		if (_next)
@@ -230,9 +231,13 @@ IResponse *DirectoryListingMiddleware::handle(IRequestParser &request, IHandlerC
 		delete response;
 		response = 0;
 	}
-	if (!selfCtx.isDir)
+	if (!static_cast<HandlerContext *>(ctx)->isDir)
 	{
 		return new ConcreteResponse(404, "Not Found: DirectoryListingMiddleware");
+	}
+	if (request.getMethod() != "GET")
+	{
+		return new ConcreteResponse(405, "Method Not Allowed");
 	}
 	if (_option == AUTO)
 	{
